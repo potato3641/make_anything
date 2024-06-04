@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Request, Response
+from fastapi import FastAPI, UploadFile, File, HTTPException, Request, Response, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -27,13 +27,29 @@ class UnicodeEecodeErrorHTTPException(HTTPException):
 async def home(request: Request):
     return templates.TemplateResponse("index.html",{"request":request})
 
-@app.post("/upload/")
+@app.get("/tw2file")
+async def home(request: Request):
+    return templates.TemplateResponse("_file_page.html",{"request":request})
+
+@app.get("/tw2text")
+async def home(request: Request):
+    return templates.TemplateResponse("_text_page.html",{"request":request})
+
+@app.post("/uploadFile/")
 async def upload_file(request: Request, file: UploadFile = File(...)):
     if file.content_type != 'text/plain':
         raise HTTPException(status_code=400, detail="Invalid file type. Only plain text files are allowed.")
     content = await file.read()
     if not content:
         raise HTTPException(status_code=400, detail="File is empty")
+    response = RedirectResponse(url="/result/", status_code=307)
+    await set_content(response, content)
+    return response
+
+@app.post("/uploadText/")
+async def upload_file(request: Request, content: str = Form()):
+    if not content:
+        raise HTTPException(status_code=400, detail="text is empty")
     response = RedirectResponse(url="/result/", status_code=307)
     await set_content(response, content)
     return response
@@ -52,11 +68,15 @@ async def set_content(response: Response, content: bytes) -> None:
     # url은 지저분해보여서 ㅎ;
     # hedaers, body는 fastapi의 middleware사용으로 인해 request가 조정되어 유실되었고
     # python 변수는 여러 요청에 의해 유실될 우려가 있어 사용을 할 수 없었음
-    try:
-        decoded_content = content.decode('utf-8')
+    #try:
+        if isinstance(content, str):
+            decoded_content = content
+        else:
+            decoded_content = content.decode('utf-8')
         response.set_cookie(key="content", value=decoded_content)
-    except UnicodeEncodeError as e:
-        raise UnicodeEecodeErrorHTTPException(detail=str(e))
+    #except UnicodeEncodeError as e:
+        print('excepted')
+    #    raise UnicodeEecodeErrorHTTPException(detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn

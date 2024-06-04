@@ -56,8 +56,13 @@
  - datastructures.py의 __getitem__ 함수에서 header_value decode방식을 latin-1에서 utf-8로 변경
  - responses.py의 Response클래스 set_cookie함수에서 마지막 cookie_val의 encode방식을 latin-1에서 utf-8로
  - 위 작업이 매우 꼽지만 자료 찾아본 결과 최종 답변은 꼬우면 네가 패키지 올려라 입니다
+ - 서버에서는 홈의 .local폴더에 있으니 헛짓거리 말기...
 
 2. 위 문제를 해결하며 관찰한 결과 venv에 있는 starlette패키지가 아니라 내 컴퓨터에 설치된 python의 starlette패키지를 갖다 쓰는것을 발견(???)
  - vscode의 문제로 가상환경이 아님에도 (venv)가 남아있는 오류가 있으니 가상환경 체크하고 할 것
 
 3. 평가판 종료 <- 30일이라면서 왜 7일컷인지는 모르겠지만 아무튼 비용발생은 0
+
+4. 서비스로 gunicorn 돌리고있었는데 restart를하면 이전 fastapi는 꺼지지 않는 문제가 있다
+
+5. README.md의 가독성이 처참해서 정리가 필요함

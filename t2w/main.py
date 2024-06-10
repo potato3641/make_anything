@@ -1,9 +1,8 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, Request, Form
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-# import os
 import base64
 import zlib
 
@@ -61,10 +60,33 @@ async def upload_text(request: Request, content: str = Form()):
     response = RedirectResponse(url=redirect_url, status_code=307)
     return response
 
+@app.post("/copyFile/")
+async def copy_file(request: Request, file: UploadFile = File(...)):
+    # 변환 페이지 URL 요청 처리
+    if file.content_type != 'text/plain':
+        raise HTTPException(status_code=400, detail="Only text file")
+    content = await file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="File is empty")
+    return await copy_text(request, content.decode('utf-8'))
+
+@app.post("/copyText/")
+async def copy_text(request: Request, content: str = Form()):
+    # 변환 페이지 URL 요청 처리
+    if not content:
+        raise HTTPException(status_code=400, detail="text is empty")
+    try:
+        decoded_content = url_compress(content)
+    except Exception as e:
+        return PlainTextResponse("ERROR")
+    return PlainTextResponse(decoded_content)
+
 @app.get("/result/{encoded_content}")
 async def get_result(request: Request, encoded_content: str):
     # 변환 페이지 GET 요청 처리
     try:
+        if not isinstance(encoded_content, str):
+            encoded_content = encoded_content.decode('utf-8')
         decoded_content = url_decompress(encoded_content)
     except Exception as e:
         raise HTTPException(status_code=400, detail="Failed to decode content")

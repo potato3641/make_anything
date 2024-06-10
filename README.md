@@ -18,7 +18,7 @@
 
 - reveal.js를 개발자가 만지작 거리는게 아니라 좀 더 덜 귀찮은 방향으로(몰라도 버튼 하나로) 만드는 것
 
-<details>
+<details open>
 <summary><h3>"기능"에 대한 세부 계획</h3></summary>
 <div markdown="1">   
 
@@ -39,7 +39,7 @@
 </div>
 </details>
 
-<details>
+<details open>
 <summary><h3>현재까지 향후 계획</h3></summary>
 <div markdown="1">   
 
@@ -60,7 +60,7 @@
 </div>
 </details>
 
-<details>
+<details open>
 <summary><h3>발생한 문제에 대한 처리</h3></summary>
 <div markdown="1">   
 

@@ -1,5 +1,5 @@
 
-{% extends "_base_page.html" %}
+{% extends "_base_T.html" %}
 
 {% block title %}file translate{% endblock %}
 
@@ -17,7 +17,7 @@
 <form id="textUploader" action="/uploadFile/" enctype="multipart/form-data" method="post" target="_blank" class="animate__animated animate__fadeInUp">
     <div class="form-group">
         <div class="custom-file">
-            <input type="file" class="custom-file-input" id="fileInput" name="file">
+            <input type="file" class="custom-file-input" id="fileInput" name="file" required>
             <label class="custom-file-label" for="fileInput">파일을 선택하세요</label>
         </div>
     </div>
@@ -27,39 +27,7 @@
     </div>
 </form>
 {% endblock %}
-
 {% block page_script %}
+<script src="/static/js/fileP.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-<script>
-    function copyurl() {
-        // 파일 가져오기
-        var fileInput = document.getElementById("fileInput").files[0];
-        // 폼 데이터 구성하기
-        var formData = new FormData();
-        formData.append("file", fileInput);
-        // css init
-        var alertBox = document.getElementById('copySuccessAlert');
-        alertBox.classList.add('fade');
-        alertBox.style.opacity = '0';
-        document.getElementById('copySuccessAlert').style.display = 'none';
-        // ajax
-        fetch("/copyFile/", {
-            method: "POST",
-            body: formData
-        })
-        .then(response => response.text())
-        .then(text => {
-            navigator.clipboard.writeText(window.location.origin+'/result/'+text).then(function() {
-                document.getElementById('copySuccessAlert').style.display = 'block';
-            }, function(err) {
-                console.error("텍스트 복사 실패: ", err);
-            });
-        });
-    }
-    document.querySelector('.custom-file-input').addEventListener('change', function (e) {
-        var fileName = document.getElementById("fileInput").files[0].name;
-        var nextSibling = e.target.nextElementSibling
-        nextSibling.innerText = fileName
-    })
-</script>
 {% endblock %}

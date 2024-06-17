@@ -1,16 +1,31 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Request, Form
+from fastapi import FastAPI, UploadFile, File, HTTPException, Request, Form, APIRouter, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
+from pydantic import BaseModel
 # https 추가 후 사용
 # from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 import base64
 import zlib
+import os
+import yaml
 
-app = FastAPI(docs_url="/documentation", redoc_url=None)
+app = FastAPI(docs_url=None, redoc_url=None)
 
+with open("sample.yaml", "r", encoding='utf-8') as f:
+    try:
+        config = yaml.safe_load(f)
+    except yaml.YAMLError as e:
+        print(f"YAML 파일을 로드하는 중 오류가 발생했습니다: {e}")
+content = config.get('EXAMPLE_T2W', '')
+if isinstance(content, list):
+    content = '\n'.join(content)
+os.environ["EXAMPLE_T2W"] = content
+
+class SampleContent(BaseModel):
+    content: str = os.getenv("EXAMPLE_T2W", "YAML LOAD ERROR")
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -29,22 +44,34 @@ app.add_middleware(
 #     def __init__(self, detail: str = "Unable to encode content"):
 #         super().__init__(status_code=400, detail=detail)
 
-@app.get("/")
+t2w_router = APIRouter()
+
+@app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     """index 템플릿"""
     return templates.TemplateResponse("index.html",{"request":request})
 
-@app.get("/t2wfile")
+@t2w_router.get("/t2wfile", response_class=HTMLResponse)
 async def t2wfile(request: Request):
     """file page 템플릿"""
     return templates.TemplateResponse("_file_page.html",{"request":request})
 
-@app.get("/t2wtext")
+@t2w_router.get("/t2wtext", response_class=HTMLResponse)
 async def t2wtext(request: Request):
     """text page 템플릿"""
     return templates.TemplateResponse("_text_page.html",{"request":request})
 
-@app.post("/uploadFile/")
+@t2w_router.get("/t2wguide", response_class=HTMLResponse)
+async def t2wguide(request: Request, content: SampleContent = Depends()):
+    """guide page 템플릿"""
+    return templates.TemplateResponse("_guide_page.html",{"request": request, "content": content.content})
+
+@t2w_router.get("/t2wexample", response_class=HTMLResponse)
+async def t2wexample(request: Request, content: SampleContent = Depends()):
+    """guide page example 템플릿"""
+    return templates.TemplateResponse("presentation.html",{"request": request, "content": content.content})
+
+@t2w_router.post("/uploadFile/", response_class=HTMLResponse)
 async def upload_file(request: Request, file: UploadFile = File(...)):
     """텍스트 파일 -> 프레젠테이션 변환 요청 처리"""
     if file.content_type != 'text/plain':
@@ -54,7 +81,7 @@ async def upload_file(request: Request, file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="file is empty")
     return await upload_text(request, content.decode('utf-8'))
 
-@app.post("/uploadText/")
+@t2w_router.post("/uploadText/", response_class=HTMLResponse)
 async def upload_text(request: Request, content: str = Form()):
     """텍스트 문자열 -> 프레젠테이션 변환 요청 처리"""
     if not content:
@@ -64,7 +91,7 @@ async def upload_text(request: Request, content: str = Form()):
     response = RedirectResponse(url=redirect_url, status_code=307)
     return response
 
-@app.post("/copyFile/")
+@t2w_router.post("/copyFile/", response_class=PlainTextResponse)
 async def copy_file(request: Request, file: UploadFile = File(...)):
     """텍스트 파일 -> 프레젠테이션 URL 변환 요청 처리"""
     if file.content_type != 'text/plain':
@@ -74,7 +101,7 @@ async def copy_file(request: Request, file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="File is empty")
     return await copy_text(request, content.decode('utf-8'))
 
-@app.post("/copyText/")
+@t2w_router.post("/copyText/", response_class=PlainTextResponse)
 async def copy_text(request: Request, content: str = Form()):
     """텍스트 문자열 -> 프레젠테이션 URL 변환 요청 처리"""
     if not content:
@@ -85,7 +112,7 @@ async def copy_text(request: Request, content: str = Form()):
         return PlainTextResponse("ERROR")
     return PlainTextResponse(decoded_content)
 
-@app.get("/result/{encoded_content}")
+@t2w_router.get("/result/{encoded_content}", response_class=HTMLResponse)
 async def get_result(request: Request, encoded_content: str):
     """프레젠테이션 페이지 GET 요청 처리"""
     try:
@@ -96,7 +123,7 @@ async def get_result(request: Request, encoded_content: str):
         raise HTTPException(status_code=400, detail="Failed to decode content")
     return templates.TemplateResponse("presentation.html", {"request": request, "content": decoded_content})
 
-@app.post("/result/{encoded_content}")
+@t2w_router.post("/result/{encoded_content}", response_class=HTMLResponse)
 async def post_result(request: Request, encoded_content: str):
     """프레젠테이션 페이지 POST 요청 처리"""
     return await get_result(request, encoded_content)
@@ -124,6 +151,8 @@ def url_decompress(encoded_text: str) -> str:
     """텍스트(URL) 압축해제"""
     compressed = base64.urlsafe_b64decode(encoded_text)
     return zlib.decompress(compressed).decode('utf-8')
+
+app.include_router(t2w_router)
 
 if __name__ == "__main__":
     import uvicorn

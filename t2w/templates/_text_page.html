@@ -1,5 +1,5 @@
 
-{% extends "_base_T.html" %}
+{% extends "_base_t2w.html" %}
 
 {% block title %}text translate{% endblock %}
 
@@ -17,19 +17,42 @@
     #textInput:focus {
         border-color: #4CAF50;
     }
+    #textUploader {
+        width: 100%;
+    }
+    .footer {
+        background-color: #333; /* footer 배경색 */
+        color: #fff; /* footer 텍스트 색상 */
+        text-align: center;
+        padding: 10px; /* footer 안 여백 */
+        position: fixed; /* 페이지 하단에 고정 */
+        left: 0;
+        bottom: 0;
+        width: 100%;
+    }
+    .footer-box {
+        display: block;
+        color: inherit;
+        text-decoration: none;
+    }
 {% endblock %}
 
 {% block page_body %}
-<h1 class="animate__animated animate__fadeInDown">슬라이드 내용을 입력하십쇼</h1>
-<form id="textUploader" action="/uploadText/" enctype="application/x-www-form-urlencoded" method="post" target="_blank" class="animate__animated animate__fadeInUp">
-    <div class="form-group">
-        <textarea id="textInput" name="content" rows="5" class="form-control" placeholder="텍스트를 입력하세요" required></textarea>
-    </div>
-    <div class="form-group">
-        <input id="submitButton" type="submit" value="만들기" class="btn btn-primary hvr-bounce-to-right">
-        <button type="button" onclick="copyurl()" class="btn btn-secondary rounded-pill px-3">URL 복사</button>
-    </div>
-</form>
+<div class="form-content">
+    <h1 class="animate__animated animate__fadeInDown">슬라이드 내용을 입력하십쇼</h1>
+    <form id="textUploader" action="/uploadText/" enctype="application/x-www-form-urlencoded" method="post" target="_blank" class="animate__animated animate__fadeInUp">
+        <div class="form-group">
+            <textarea id="textInput" name="content" rows="5" class="form-control" placeholder="텍스트를 입력하세요" required></textarea>
+        </div>
+        <div class="form-group">
+            <input id="submitButton" type="submit" value="만들기" class="btn btn-primary hvr-bounce-to-right">
+            <button type="button" onclick="copyurl()" class="btn btn-secondary rounded-pill px-3">URL 복사</button>
+        </div>
+    </form>
+</div>
+<footer class="footer">
+    <a href="/t2wguide" class="footer-box">도움말</a>
+</footer>
 {% endblock %}
 {% block page_script %}
 <script src="/static/js/textP.js"></script>

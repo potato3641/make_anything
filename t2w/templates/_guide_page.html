@@ -18,14 +18,14 @@
         .container {
             display: flex;
             flex-direction: column;
-            width: 80vw; /* 전체 너비를 줄임 */
-            max-width: 1000px; /* 최대 너비 제한 */
-            height: 70vh; /* 높이를 줄임 */
-            background-color: #34495e; /* 컨테이너 배경색 */
+            width: 80vw;
+            max-width: 1000px;
+            height: 70vh;
+            background-color: #34495e;
             box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
             border-radius: 8px;
             overflow: hidden;
-            color: #ecf0f1; /* 전체 텍스트 색상 */
+            color: #ecf0f1;
         }
         .input-container, .preview-container {
             width: 100%;
@@ -39,12 +39,12 @@
             height: 100%;
             padding: 10px;
             box-sizing: border-box;
-            border: 1px solid #2c3e50; /* 내용 영역 테두리 색상 */
-            font-size: 14px; /* 폰트 크기 줄임 */
+            border: 1px solid #2c3e50;
+            font-size: 14px;
             line-height: 1.6;
-            white-space: pre-wrap; /* 줄 바꿈 유지 */
-            overflow: auto; /* 스크롤바 표시 */
-            background-color: #2c3e50; /* 내용 영역 배경색 */
+            white-space: pre-wrap;
+            overflow: auto;
+            background-color: #2c3e50;
         }
         iframe {
             width: 100%;
@@ -57,16 +57,17 @@
             margin: 0;
         }
         .header {
-            background-color: #333; /* header 배경색 */
-            color: #fff; /* header 텍스트 색상 */
+            background-color: #333;
+            color: #fff;
             text-align: center;
-            padding: 10px; /* header 안 여백 */
-            position: fixed; /* 페이지 하단에 고정 */
+            padding: 10px;
+            position: fixed;
             left: 0;
             top: 0;
             width: 100%;
+            cursor: pointer;
         }
-        .header-box {
+        .header-box, .header-box:hover, .header-box:link, .header-box:active {
             display: block;
             color: inherit;
             text-decoration: none;
@@ -74,17 +75,19 @@
     </style>
 </head>
 <body>
-    <header class="header">
-        <a href="/t2wtext" class="header-box">돌아가기</a>
+    <header class="header reveal">
+        <a href="/t2wtext" class="header-box">도움말</a>
     </header>
-    <div class="guide-container">
-        <h1 class="guide-text">마크다운 사용 도우미</h1>
-        <div class="container">
-            <div class="input-container">
-                <div id="markdown-content" class="markdown-content">{{ content }}</div>
-            </div>
-            <div class="preview-container">
-                <iframe id="preview" src="/t2wexample"></iframe>
+    <div id="guide-container" class="guide-container">
+        <div class="guide-content">
+            <h1 class="guide-text">마크다운 사용 도우미</h1>
+            <div class="container">
+                <div class="input-container">
+                    <div id="markdown-content" class="markdown-content">{{ content }}</div>
+                </div>
+                <div class="preview-container">
+                    <iframe id="preview" src="/t2wexample"></iframe>
+                </div>
             </div>
         </div>
     </div>

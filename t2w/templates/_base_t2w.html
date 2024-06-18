@@ -1,71 +1,60 @@
-<!DOCTYPE html>
-<html lang="ko-kr">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% endblock %}</title>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hover.css/2.3.1/css/hover-min.css">
-    <style>
-        body, html {
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #f8f9fa;
-        }
-        .container {
-            text-align: center;
-        }
-        #copySuccessAlert, #copyFailedAlert, #emptyFileAlert {
-            position: fixed;
-            top: 10%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 5; /* 다른 요소들보다 위에 위치 */
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 0;
-        }
-        #copySuccessAlert.fade, #copyFailedAlert.fade, #emptyFileAlert.fade {
-            animation: fadeOut 2s ease forwards;
-        }
-        #copySuccessAlert.fade.show .btn-close, #copyFailedAlert.fade.show .btn-close, #emptyFileAlert.fade.show .btn-close {
-            display: none;
-        }
-        #copySuccessAlert.fade.show + #textUploader, #copyFailedAlert.fade.show + #textUploader, #emptyFileAlert.fade.show + #textUploader {
-            margin-top: 0;
-        }
-        @keyframes fadeOut {
-            0% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-    {% block page_style %}{% endblock %}
-    </style>
-</head>
-<body>
-    <div class="container centered-container">
-        {% block page_body %}{% endblock %}
-        <div id="copySuccessAlert" class="alert alert-primary alert-dismissible fade show" role="alert" style="display: none;">
-            프레젠테이션 주소가 클립보드에 복사되었습니다!
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        <div id="copyFailedAlert" class="alert alert-danger alert-dismissible fade show" role="alert" style="display: none;">
-            프레젠테이션 주소 복사에 실패하였습니다...
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        <div id="emptyFileAlert" class="alert alert-warning alert-dismissible fade show" role="alert" style="display: none;">
-            파일을 선택하세요...
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+
+{% extends "__base.html" %}
+
+{% block sub_style %}
+    body, html {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fa;
+    }
+    .container {
+        text-align: center;
+    }
+    #copySuccessAlert, #copyFailedAlert, #emptyFileAlert {
+        position: fixed;
+        top: 10%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 5; /* 다른 요소들보다 위에 위치 */
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 0;
+    }
+    #copySuccessAlert.fade, #copyFailedAlert.fade, #emptyFileAlert.fade {
+        animation: fadeOut 2s ease forwards;
+    }
+    #copySuccessAlert.fade.show .btn-close, #copyFailedAlert.fade.show .btn-close, #emptyFileAlert.fade.show .btn-close {
+        display: none;
+    }
+    #copySuccessAlert.fade.show + #textUploader, #copyFailedAlert.fade.show + #textUploader, #emptyFileAlert.fade.show + #textUploader {
+        margin-top: 0;
+    }
+    @keyframes fadeOut {
+        0% { opacity: 1; }
+        100% { opacity: 0; }
+    }
+{% endblock %}
+{% block sub_body %}
+<div class="container centered-container">
+    {% block page_body %}{% endblock %}
+    <div id="copySuccessAlert" class="alert alert-primary alert-dismissible fade show" role="alert" style="display: none;">
+        프레젠테이션 주소가 클립보드에 복사되었습니다!
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    {% block page_script %}{% endblock %}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-</body>
-</html>
+    <div id="copyFailedAlert" class="alert alert-danger alert-dismissible fade show" role="alert" style="display: none;">
+        프레젠테이션 주소 복사에 실패하였습니다...
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div id="emptyFileAlert" class="alert alert-warning alert-dismissible fade show" role="alert" style="display: none;">
+        파일을 선택하세요...
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
+{% endblock %}
+{% block sub_script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
+{% endblock %}

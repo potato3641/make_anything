@@ -1,38 +1,46 @@
-<!DOCTYPE html>
-<html lang="ko-kr">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>index</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/moon.min.css" id="theme">
-</head>
-<body>
-    <div class="reveal">
-        <div class="slides">
 
-            <!-- 텍스트 직접 변환 -->
-            <section>
-                <section data-background-iframe="t2wtext">
-                </section>
-                <section data-background-iframe="t2wguide">
-                </section>
-            </section>
-            
-            <!-- 텍스트 파일 변환 -->
-            <section data-background-iframe="t2wfile">
-            </section>
-        </div>
-    </div>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/markdown/markdown.min.js"></script>
-    <script>
-        // reveal.js 초기화
-        Reveal.initialize({
-            //backgroundTransition: 'none',
-        });
-    </script>
-</body>
-</html>
+{% extends "__base.html" %}
+
+{% block title %}index{% endblock %}
+{% block page_style %}
+    body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .aside {
+        background-color: #333; /* footer 배경색 */
+        color: #fff; /* footer 텍스트 색상 */
+        text-align: center;
+        writing-mode: vertical-lr;
+        text-orientation: upright;
+        padding: 5px; /* footer 안 여백 */
+        position: fixed; /* 페이지 하단에 고정 */
+        right: 0;
+        top: 0;
+        height: 100vh;
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+        transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s, color 0.3s;
+    }
+    .aside-box, .aside-box:hover, .aside-box:link, .aside-box:active {
+        display: block;
+        color: inherit;
+        text-decoration: none;
+    }
+    .aside:hover {
+        z-index: 1;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        background-color: #E9D4FF;
+        color: #000;
+    }
+{% endblock %}
+{% block sub_body %}
+<h1>오른쪽 버튼만 개발이 완료됨</h1>
+<aside class="aside">
+    <a href="/t2wtext" class="aside-box">TEXT TO WEB SLIDE</a>
+</aside>
+{% endblock %}
+{% block page_script %}{% endblock %}

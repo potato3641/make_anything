@@ -10,6 +10,31 @@
     .custom-file-label::after {
         content: "파일 선택";
     }
+    .aside {
+        background-color: #333; /* footer 배경색 */
+        color: #fff; /* footer 텍스트 색상 */
+        text-align: center;
+        writing-mode: vertical-lr;
+        padding: 5px; /* footer 안 여백 */
+        position: fixed; /* 페이지 하단에 고정 */
+        left: 0;
+        top: 0;
+        height: 100vh;
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+        transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s, color 0.3s;
+    }
+    .aside-box, .aside-box:hover, .aside-box:link, .aside-box:active {
+        display: block;
+        color: inherit;
+        text-decoration: none;
+    }
+    .aside:hover {
+        z-index: 1;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        background-color: #E9D4FF;
+        color: #000;
+    }
 {% endblock %}
 
 {% block page_body %}
@@ -26,6 +51,9 @@
         <button type="button" onclick="copyurl()" class="btn btn-secondary rounded-pill px-3">URL 복사</button>
     </div>
 </form>
+<aside class="aside">
+    <a href="/t2wtext" class="aside-box">텍스트로 입력</a>
+</aside>
 {% endblock %}
 {% block page_script %}
 <script src="/static/js/fileP.js"></script>

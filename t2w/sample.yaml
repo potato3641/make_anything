@@ -1,6 +1,8 @@
 EXAMPLE_T2W:
 - |
   # 제목
+  * 슬라이드를 가로로 나누려면 한 줄에 ---를 입력
+  * 슬라이드를 세로로 나누려면 한 줄에 --를 입력
   ---
   ## 부제목
   - 리스트 하나
@@ -30,3 +32,116 @@ EXAMPLE_T2W:
   | ----- | ----- |
   | 헤드가 | 필요없으면 |
   | 내용만 | 작성해도됨 |
+EXAMPLE2_T2W:
+- |
+  ## 배경색을 바꾸고싶다
+  <!-- .slide: data-background="#ffdddd" -->
+  --
+  ## 배경이미지를 넣고싶다
+  <!-- .slide: data-background-image="/static/images/bonobono.png" -->
+  --
+  ## 배경 이미지를 작게 넣고싶다
+  <!-- .slide:  data-background-image="/static/images/bonobono.png" data-background-size="100px" -->
+  --
+  ## 배경 이미지를 투명하게 하고싶다
+  <!-- .slide:  data-background-image="/static/images/bonobono.png" data-background-opacity="0.5" -->
+  ---
+  ## 버튼 만들기
+  - <a href="#/0">첫 페이지로</a>
+  - <a href="#/0/3">첫 페이지의 맨 아래 페이지로</a>
+  - <button class="navigate-left">왼쪽</button>
+  <button class="navigate-right">오른쪽</button>
+  <button class="navigate-up">위(수직용)</button>
+  <button class="navigate-down">아래(수직용)</button>
+  <button class="navigate-prev">이전(왼쪽의 맨 마지막)</button>
+  <button class="navigate-next">다음(수직일 경우 아래)</button>
+  ---
+  ## 이미지 쌓기↓
+  --
+  ## 이미지 쌓기
+  <div class="r-stack">
+    <img
+      class="fragment"
+      src="/static/images/bonobono.png"
+      width="960"
+      height="540"
+    />
+    <img
+      class="fragment"
+      src="/static/images/bonobono.png"
+      width="480"
+      height="270"
+    />
+    <img
+      class="fragment"
+      src="/static/images/bonobono.png"
+      width="240"
+      height="135"
+    />
+  </div>
+  ---
+  ## 호버 효과(a태그 필수)
+  <a href="#/4">
+    <img class="r-frame" src="/static/images/bonobono.png" width="200" />
+  </a>
+  ---
+  ## 이 슬라이드는 안보일 것임
+  <!-- .slide:  data-visibility="hidden" -->
+  ---
+  ## 슬라이드 전환효과 변경
+  - none
+  - fade
+  - slide(기본)
+  - convex(볼록)
+  - concave(오목)
+  <!-- .slide:  data-transition="zoom" -->
+  ---
+  ## 슬라이드 전환효과 속도 변경
+  - default(기본)
+  - fast(빠르게)
+  - slow(느리게)
+  <!-- .slide:  data-transition="zoom" data-transition-speed="slow" -->
+  ---
+  ## 연속 애니메이션(마크다운 사용X)
+  <!-- .slide: data-auto-animate -->
+  <p>마크다운 대신 html써야함!</p>
+  ---
+  <!-- .slide: data-auto-animate -->
+  <p style="margin-top: 100px; color: red;">마크다운 대신 html써야함!</p>
+  <p>근데 스타일도 쓸 수 있음</p>
+  ---
+  <!-- .slide: data-auto-animate -->
+  <p>이거 fragment 수동으로 할 수 도 있음</p>
+  ---
+  <!-- .slide: data-auto-animate -->
+  <p>이거 fragment 수동으로 할 수 도 있음</p>
+  <p>중복으로 써야하지만</p>
+  ---
+  <!-- .slide: data-auto-animate -->
+  <p>이거 fragment 수동으로 할 수 도 있음</p>
+  <p>순서도 정할 수 있음</p>
+  <p>중복으로 써야하지만</p>
+  ---
+  <!-- .slide: data-auto-animate -->
+  <p>이런 박스도</p>
+  <div data-id="box" style="height: 50px; background: salmon;"></div>
+  ---
+  <!-- .slide: data-auto-animate -->
+  <p>변경할 수 있음</p>
+  <div data-id="box" style="height: 200px; background: blue;"></div>
+  ---
+  <!-- .slide: data-auto-animate -->
+  <ul>
+  <li>여러개</li>
+  <li>한번에</li>
+  <li>하기도</li>
+  </ul>
+  ---
+  <!-- .slide: data-auto-animate -->
+  <ul>
+  <li>여러개</li>
+  <li>이렇게</li>
+  <li>한번에</li>
+  <li>나오게</li>
+  <li>하기도</li>
+  </ul>

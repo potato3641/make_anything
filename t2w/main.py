@@ -23,9 +23,14 @@ content = config.get('EXAMPLE_T2W', '')
 if isinstance(content, list):
     content = '\n'.join(content)
 os.environ["EXAMPLE_T2W"] = content
+content2 = config.get('EXAMPLE2_T2W', '')
+if isinstance(content2, list):
+    content2 = '\n'.join(content2)
+os.environ["EXAMPLE2_T2W"] = content2
 
 class SampleContent(BaseModel):
     content: str = os.getenv("EXAMPLE_T2W", "YAML LOAD ERROR")
+    content2: str = os.getenv("EXAMPLE2_T2W", "YAML LOAD ERROR")
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -64,12 +69,22 @@ async def t2wtext(request: Request):
 @t2w_router.get("/t2wguide", response_class=HTMLResponse)
 async def t2wguide(request: Request, content: SampleContent = Depends()):
     """guide page 템플릿"""
-    return templates.TemplateResponse("_guide_page.html",{"request": request, "content": content.content})
+    return templates.TemplateResponse("_guide_markdown.html",{"request": request, "content": content.content})
 
 @t2w_router.get("/t2wexample", response_class=HTMLResponse)
 async def t2wexample(request: Request, content: SampleContent = Depends()):
     """guide page example 템플릿"""
     return templates.TemplateResponse("presentation.html",{"request": request, "content": content.content})
+
+@t2w_router.get("/t2wguide2", response_class=HTMLResponse)
+async def t2wguide(request: Request, content: SampleContent = Depends()):
+    """guide2 page 템플릿"""
+    return templates.TemplateResponse("_guide_custom.html",{"request": request, "content": content.content2})
+
+@t2w_router.get("/t2wexample2", response_class=HTMLResponse)
+async def t2wexample(request: Request, content: SampleContent = Depends()):
+    """guide2 page example 템플릿"""
+    return templates.TemplateResponse("presentation.html",{"request": request, "content": content.content2})
 
 @t2w_router.post("/uploadFile/", response_class=HTMLResponse)
 async def upload_file(request: Request, file: UploadFile = File(...)):

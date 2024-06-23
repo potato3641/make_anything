@@ -70,6 +70,23 @@
 
 - [X] 9. 예외처리 <- 완
 
+- [ ] 10. 갑작스러운 리액트 공부
+  * 리액트 기본 공부(겉햝기 완)
+  * TextPage 변환(완)
+  * 조언 듣기(완)
+    - 페이지 이동은 훅으로 해라
+    - settimeout은 지양하라
+    - useEffect가 정말 필요한 곳인지 고민
+    - bootstrap말고 다른것도 찾아보기
+  * FilePage 변환
+  * Index 변환
+  * Guide Markdown 변환
+  * Guide Custom 변환
+  * (가능하다면) css 발전시키기
+  * 라이브용 빌드 변환
+  * 라이브 테스트
+  * 라이브 환경에 연결
+
 </div>
 </details>
 

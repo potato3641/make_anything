@@ -86,14 +86,14 @@ async def t2wexample(request: Request, content: SampleContent = Depends()):
     return templates.TemplateResponse("presentation.html",{"request": request, "content": content.content})
 
 # 240625 리액트 대체 결정 이후 폐기확정
-@t2w_router.get("/t2wguide2", response_class=HTMLResponse)
-async def t2wguide(request: Request, content: SampleContent = Depends()):
+@t2w_router.get("/t2wguidedeep", response_class=HTMLResponse)
+async def t2wguidedeep(request: Request, content: SampleContent = Depends()):
     """guide2 page 템플릿"""
     return templates.TemplateResponse("_guide_custom.html",{"request": request, "content": content.content2})
 
 # 240625 리액트 대체 결정 이후 폐기확정
-@t2w_router.get("/t2wexample2", response_class=HTMLResponse)
-async def t2wexample(request: Request, content: SampleContent = Depends()):
+@t2w_router.get("/t2wexampledeep", response_class=HTMLResponse)
+async def t2wexampledeep(request: Request, content: SampleContent = Depends()):
     """guide2 page example 템플릿"""
     return templates.TemplateResponse("presentation.html",{"request": request, "content": content.content2})
 
@@ -102,6 +102,18 @@ async def t2wexample(request: Request, content: SampleContent = Depends()):
 async def t2wguidebasic(request: Request, content: SampleContent = Depends()):
     """guide basic example 템플릿"""
     return templates.TemplateResponse("presentation.html",{"request": request, "content": content.content3})
+
+# 서버 리소스 가져오기용
+@t2w_router.get("/t2wexampletext", response_class=HTMLResponse)
+async def t2wguidebasic(request: Request, content: SampleContent = Depends()):
+    """example text 소스"""
+    return PlainTextResponse(content.content)
+
+# 서버 리소스 가져오기용
+@t2w_router.get("/t2wexampledeeptext", response_class=HTMLResponse)
+async def t2wguidebasic(request: Request, content: SampleContent = Depends()):
+    """example deep text 소스"""
+    return PlainTextResponse(content.content2)
 
 @t2w_router.post("/uploadFile/", response_class=HTMLResponse)
 async def upload_file(request: Request, file: UploadFile = File(...)):

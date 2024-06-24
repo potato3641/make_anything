@@ -1,0 +1,18 @@
+.guide-content {
+  flex: 1;
+  overflow: auto;
+}
+
+.button-container {
+  margin-bottom: 10px;
+}
+
+.button-container button {
+  margin: 10px;
+}
+
+.open-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

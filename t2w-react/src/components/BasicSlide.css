@@ -1,0 +1,11 @@
+iframe {
+  width: 60vw;
+  min-height: 300px;
+  border: none;
+}
+
+.slide-container {
+  width: 60vw;
+  min-height: 300px;
+  overflow: hidden;
+}

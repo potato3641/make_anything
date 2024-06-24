@@ -145,3 +145,337 @@ EXAMPLE2_T2W:
   <li>나오게</li>
   <li>하기도</li>
   </ul>
+GUIDE_BASIC_T2W:
+- |
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  ## 안녕하세요
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  ## 안녕하세요
+  ## T2W 가이드
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1000" -->
+  ## 안녕하세요
+  ## T2W 가이드
+  ## 기본편을
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1000" -->
+  # 시작하겠습니다!
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  # 큰 글자
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  # 큰 글자
+  # 를
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1000" -->
+  # 큰 글자
+  # 를
+  # 쓰려면
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  <p>앞에</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  <p>앞에</p>
+  <p style="color: tomato;">#을</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1000" -->
+  <p>앞에</p>
+  <p style="color: tomato;">#을</p>
+  <p>붙여주세요!</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  <p>앞에</p>
+  <h1 style="color: Violet;">#이렇게 말이죠</h1>
+  <p>붙여주세요!</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  <p>앞에</p>
+  <h1 style="color: Violet;">#이렇게 말이죠</h1>
+  <h2 style="color: Violet;">##작게도</h2>
+  <p>붙여주세요!</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1000" -->
+  <p>앞에</p>
+  <h1 style="color: Violet;">#이렇게 말이죠</h1>
+  <h2 style="color: Violet;">##작게도</h2>
+  <h3 style="color: Violet;">###가능해요</h3>
+  <p>붙여주세요!</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  # 슬라이드를
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  # 슬라이드를
+  # 나누려면
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1000" -->
+  # 슬라이드를
+  # 나누려면
+  # 어떻게
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1000" -->
+  <h1 style="color: tomato;">기억하세요!</h1>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  ### 슬라이드를
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  ### 슬라이드를
+  * 가로로 나누려면
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1000" -->
+  ### 슬라이드를
+  * 가로로 나누려면
+  * 한 줄에 ---를 입력
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  ### 슬라이드를
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  ### 슬라이드를
+  * 세로로 나누려면
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1000" -->
+  ### 슬라이드를
+  * 세로로 나누려면
+  * 한 줄에 --를 입력
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  <h1 style="color: tomato;">기억하세요!</h1>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  <h1 style="color: tomato;">기억하세요!</h1>
+  <h2 style="color: Violet;">가로는 ---</h2>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1200" -->
+  <h1 style="color: tomato;">기억하세요!</h1>
+  <h2 style="color: Violet;">가로는 ---</h2>
+  <h2 style="color: Violet;">세로는 --</h2>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  # 간단한
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  # 간단한
+  # 목차는
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1000" -->
+  # 간단한
+  # 목차는
+  # 어떻게
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  <h1 style="color: tomato;">기억하세요!</h1>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  <h1 style="color: tomato;">기억하세요!</h1>
+  <li> 리스트 하나</li>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1200" -->
+  <h1 style="color: tomato;">기억하세요!</h1>
+  <li> 리스트 하나</li>
+  <p style="color: Violet;">- 리스트 하나</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  # 글꼴을
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  # 글꼴을
+  # 바꾸려면
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1000" -->
+  # 글꼴을
+  # 바꾸려면
+  # 어떻게
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  <p style="font-style: italic;">기울일때</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1200" -->
+  <p style="font-style: italic;">기울일때</p>
+  <p style="color: Violet;">*기울일때*<p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  <p style="font-weight: 700;">굵게</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1200" -->
+  <p style="font-weight: 700;">굵게</p>
+  <p style="color: Violet;">**굵게**</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  # 인용문
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  # 인용문
+  > 어떻게
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1000" -->
+  # 인용문
+  > 어떻게
+  # 하냐면
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  <p>앞에</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  <p>앞에</p>
+  <p style="color: Violet;">> 꺽쇠를</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1200" -->
+  <p>앞에</p>
+  <p style="color: Violet;">> 꺽쇠를</p>
+  <p>쓰세요</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  # 코드를
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  # 코드를
+  # 쓰려면
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  # 코드를
+  # 쓰려면
+  # 어떻게
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  ```js
+  function helloWorld() {
+      //이렇게
+  }
+  ```
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  ```js
+  function helloWorld() {
+      //이렇게
+  }
+  ```
+  ### 이런걸
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1000" -->
+  ```js
+  function helloWorld() {
+      //이렇게
+  }
+  ```
+  ### 이런걸
+  ### 쓰려면
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  <p style="color: tomato;">앞뒤로 ```</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="500" -->
+  <p style="color: tomato;">앞뒤로 ```</p>
+  <p>```</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="500" -->
+  <p style="color: tomato;">앞뒤로 ```</p>
+  <p>```</p>
+  <p>console.log('hello world')</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  <p style="color: tomato;">앞뒤로 ```</p>
+  <p>```</p>
+  <p>console.log('hello world')</p>
+  <p>```</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1200" -->
+  <p style="color: Violet;">앞뒤로 ```</p>
+  <p>```</p>
+  <p>console.log('hello world')</p>
+  <p>```</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  # 이미지
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  # 이미지
+  # 넣기는
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1000" -->
+  # 이미지
+  # 넣기는
+  # 어떻게
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  ![이미지 불러오기 실패 시 설명](https://이미지주소)
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1200" -->
+  ![이미지 불러오기 실패 시 설명](https://이미지주소)
+  <p style="color: Violet;">![이미지 불러오기 실패 시 설명](https://이미지주소)</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  ### 잘 나오는건
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  ### 잘 나오는건
+  ### 원본크기대로
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  ### 잘 나오는건
+  ### 원본크기대로
+  ### 나옵니다
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1200" -->
+  ### 잘 나오는건
+  ### 원본크기대로
+  ### 나옵니다
+  ![이미지 불러오기 실패 시 설명](/static/images/bonobono.png)
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  # 링크는
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  # 링크는
+  # 어떻게
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1000" -->
+  # 링크는
+  # 어떻게
+  # 하나요
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  [이렇게 하지요](https://링크주소)
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1200" -->
+  [이렇게 하지요](https://링크주소)
+  <p style="color: Violet;">[이렇게 하지요](https://링크주소)</p>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  # 표는
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  # 표는
+  # 어떻게
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1000" -->
+  # 표는
+  # 어떻게
+  # 쓰나요
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  <h1 style="color: tomato;">기억하세요!</h1>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  | 제목 | 쓰는곳 |
+  | --- | --- |
+  | 내용 | 확장가능 |
+  <h1 style="color: tomato;">기억하세요!</h1>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  <h1 style="color: tomato;">기억하세요!</h1>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="2200" -->
+  <p style="color: Violet;">| 제목 | 제목 |</p>
+  <p style="color: Violet;">| --- | --- |</p>
+  <p style="color: Violet;">| 내용 | 내용 |</p>
+  <h1 style="color: tomato;">기억하세요!</h1>
+  ---
+  <!-- .slide: data-auto-animate data-autoslide="1000" -->
+  # 끝
+  # 자세한건 심화편
+  <h1><a href="#/0">다시보기</a></h1>

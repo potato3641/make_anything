@@ -32,17 +32,17 @@
 
 - [X] 4. nginx 앞에 둬서 gunicorn로 돌리는 구성 <- 완
 
-- [ ] 5. 깃허브 파이프라인 만들어두기 <- <U>**now**</U> 수동 파이프라인 : git clone ~으로 수동 소스코드 가져오기, sudo systemctl restart ~의 수동 재시작으로 구성됨
+- [X] 5. 깃허브 파이프라인 만들어두기 <- <U>**now**</U> 수동 파이프라인 : `cd make_anything;git pull origin master;ps -ef | grep gunicorn | awk 'NR==1 {print $2}' | xargs kill;`으로 구성완료
 
 - [X] 6. 현재 텍스트파일 업로드 후 변환 이 순서로 돌아가는데 이걸 변경해볼것 예전에 봤던 DB없는 사이트처럼 파일내용을 url에 DB처럼 축약시키게 하고 내용은 textarea같은거로 받거나 url로만 만드는 제너레이터 비슷하게 변경해보자 <- 완
 
 - [X] 7. 프레젠테이션 템플릿을 서버에서 내용 축약후 200자 이내라면 URL로도 볼 수 있게 만들어보기 <- 완
 
-- [ ] 8. text 페이지에서 프레젠테이션 제작 도움을 위한 버튼만들기(거창한거 아닌것 같았는데 기획하다보니 거창해짐 <U>**1번 기능**</U>과 연관있음)
+- [X] 8. text 페이지에서 프레젠테이션 제작 도움을 위한 버튼만들기(거창한거 아닌것 같았는데 기획하다보니 거창해짐 <U>**1번 기능**</U>과 연관있음) <- 폐기됨
 
 - [X] 9. t2w 브랜치 분리할때 t2w페이지도 분기해서 새 index 페이지 만들기 <- 새 index페이지 완성
 
-- [ ] 10. 앗싸리 완전 revealjs 도배하는 종속 페이지 만드는것도 괜찮겠음 다만 iframe분리시켜서 외부에 네비게이터 추가할 수 있게 고민해보기
+- [X] 10. 앗싸리 완전 revealjs 도배하는 종속 페이지 만드는것도 괜찮겠음 다만 iframe분리시켜서 외부에 네비게이터 추가할 수 있게 고민해보기 <- 폐기됨
 
 
 </div>
@@ -71,16 +71,16 @@
 - [X] 9. 예외처리 <- 완
 
 - [ ] 10. 갑작스러운 리액트 공부
-  * 리액트 기본 공부(겉햝기 완)
-  * TextPage 변환(완)
-  * 조언 듣기(완)
-    - 페이지 이동은 훅으로 해라
-    - settimeout은 지양하라
+  * 리액트 기본 공부 <- 겉햝기 완
+  * TextPage 변환 <- 완
+  * 조언 듣기
+    - 페이지 이동은 훅으로 해라 <- 조사 완
+    - settimeout은 지양하라 <- 아직도 해결할 수 없음
     - useEffect가 정말 필요한 곳인지 고민
-    - bootstrap말고 다른것도 찾아보기
+    - bootstrap말고 다른것도 찾아보기 <- 테일윈드
   * FilePage 변환
   * Index 변환
-  * Guide Markdown 변환
+  * Guide Markdown 변환 <- 완
   * Guide Custom 변환
   * (가능하다면) css 발전시키기
   * 라이브용 빌드 변환
@@ -108,7 +108,6 @@
 
 - [X] 4. 서비스로 gunicorn 돌리고있었는데 restart를하면 이전 fastapi는 꺼지지 않는 문제가 있다
   * service restart 대신 수동 재기동 1줄 명령어로 대체함
-  * `cd make_anything;git pull origin master;ps -ef | grep gunicorn | awk 'NR==1 {print $2}' | xargs kill;`
   * 업데이트된 코드 가져와서 현재 실행중인 gunicorn이 reload상태니까 마스터를 종료시키는 것
   * ps의 pid는 가장 늦고 워커 둘도 마스터보다 늦게 생성되므로 NR==1일 때 gunicorn인 프로세스는 항상 마스터
   * 이것도 프로젝트 늘어나면 서버 늘릴 때 같이 파이프라인 만들 서버 하나 더 만들 예정 그전까진 수동으로 유지

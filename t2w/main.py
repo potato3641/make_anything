@@ -14,23 +14,27 @@ import yaml
 
 app = FastAPI(docs_url=None, redoc_url=None)
 
-with open("sample.yaml", "r", encoding='utf-8') as f:
-    try:
-        config = yaml.safe_load(f)
-    except yaml.YAMLError as e:
-        print(f"YAML 파일을 로드하는 중 오류가 발생했습니다: {e}")
-content = config.get('EXAMPLE_T2W', '')
-if isinstance(content, list):
-    content = '\n'.join(content)
-os.environ["EXAMPLE_T2W"] = content
-content2 = config.get('EXAMPLE2_T2W', '')
-if isinstance(content2, list):
-    content2 = '\n'.join(content2)
-os.environ["EXAMPLE2_T2W"] = content2
+def load_config_from_yaml(file_path: str):
+    with open(file_path, "r", encoding='utf-8') as f:
+        try:
+            config = yaml.safe_load(f)
+        except yaml.YAMLError as e:
+            print(f"YAML 파일을 로드하는 중 오류가 발생했습니다: {e}")
+            return {}
+
+    for key in ['EXAMPLE_T2W', 'EXAMPLE2_T2W', 'GUIDE_BASIC_T2W']:
+        content = config.get(key, '')
+        if isinstance(content, list):
+            content = '\n'.join(content)
+        os.environ[key] = content
+
+config_file = "sample.yaml"
+load_config_from_yaml(config_file)
 
 class SampleContent(BaseModel):
     content: str = os.getenv("EXAMPLE_T2W", "YAML LOAD ERROR")
     content2: str = os.getenv("EXAMPLE2_T2W", "YAML LOAD ERROR")
+    content3: str = os.getenv("GUIDE_BASIC_T2W", "YAML LOAD ERROR")
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -51,40 +55,53 @@ app.add_middleware(
 
 t2w_router = APIRouter()
 
+# 240625 개발용 잔류
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     """index 템플릿"""
     return templates.TemplateResponse("index.html",{"request":request})
 
+# 240625 개발용 잔류
 @t2w_router.get("/t2wfile", response_class=HTMLResponse)
 async def t2wfile(request: Request):
     """file page 템플릿"""
     return templates.TemplateResponse("_file_page.html",{"request":request})
 
+# 240625 개발용 잔류
 @t2w_router.get("/t2wtext", response_class=HTMLResponse)
 async def t2wtext(request: Request):
     """text page 템플릿"""
     return templates.TemplateResponse("_text_page.html",{"request":request})
 
+# 240625 리액트 대체 결정 이후 폐기확정
 @t2w_router.get("/t2wguide", response_class=HTMLResponse)
 async def t2wguide(request: Request, content: SampleContent = Depends()):
     """guide page 템플릿"""
     return templates.TemplateResponse("_guide_markdown.html",{"request": request, "content": content.content})
 
+# 240625 리액트 대체 결정 이후 폐기확정
 @t2w_router.get("/t2wexample", response_class=HTMLResponse)
 async def t2wexample(request: Request, content: SampleContent = Depends()):
     """guide page example 템플릿"""
     return templates.TemplateResponse("presentation.html",{"request": request, "content": content.content})
 
+# 240625 리액트 대체 결정 이후 폐기확정
 @t2w_router.get("/t2wguide2", response_class=HTMLResponse)
 async def t2wguide(request: Request, content: SampleContent = Depends()):
     """guide2 page 템플릿"""
     return templates.TemplateResponse("_guide_custom.html",{"request": request, "content": content.content2})
 
+# 240625 리액트 대체 결정 이후 폐기확정
 @t2w_router.get("/t2wexample2", response_class=HTMLResponse)
 async def t2wexample(request: Request, content: SampleContent = Depends()):
     """guide2 page example 템플릿"""
     return templates.TemplateResponse("presentation.html",{"request": request, "content": content.content2})
+
+# 서버 리소스 가져오기용
+@t2w_router.get("/t2wguidebasic", response_class=HTMLResponse)
+async def t2wguidebasic(request: Request, content: SampleContent = Depends()):
+    """guide basic example 템플릿"""
+    return templates.TemplateResponse("presentation.html",{"request": request, "content": content.content3})
 
 @t2w_router.post("/uploadFile/", response_class=HTMLResponse)
 async def upload_file(request: Request, file: UploadFile = File(...)):

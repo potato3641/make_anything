@@ -43,3 +43,11 @@ iframe {
 .preview-container {
   overflow: hidden;
 }
+
+.aside.aside-bottom {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 20px;
+  z-index: 1;
+}

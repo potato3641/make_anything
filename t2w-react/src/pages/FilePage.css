@@ -1,0 +1,15 @@
+.custom-file-input {
+  display: none;
+}
+
+.form-group button,
+.form-group input {
+  margin: 5px;
+}
+
+.aside.aside-left {
+  position: fixed;
+  left: 20px;
+  bottom: 50%;
+  z-index: 1;
+}

@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './Alert.css';
 
 const Alert = ({ status, onClose }) => {
-  const [alertObject, setAlertObject] = useState([
+  const [alertObject] = useState([
     {
       alertClass: 'alert-danger',
       content: '프레젠테이션 주소 복사에 실패하였습니다...'
@@ -11,6 +11,10 @@ const Alert = ({ status, onClose }) => {
     {
       alertClass: 'alert-primary',
       content: '프레젠테이션 주소가 클립보드에 복사되었습니다!'
+    },
+    {
+      alertClass: 'alert-warning',
+      content: '처리 중 오류가 발생했습니다'
     },
     {
       alertClass: 'alert-warning',

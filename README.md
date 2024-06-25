@@ -76,12 +76,12 @@
   * 조언 듣기
     - 페이지 이동은 훅으로 해라 <- 조사 완
     - settimeout은 지양하라 <- 아직도 해결할 수 없음
-    - useEffect가 정말 필요한 곳인지 고민
+    - useEffect가 정말 필요한 곳인지 고민 <- 실적용해보며 체험한듯
     - bootstrap말고 다른것도 찾아보기 <- 테일윈드
-  * FilePage 변환
-  * Index 변환
+  * FilePage 변환 <- 완
+  * Index 변환 <- t2w전용으로 통합 완
   * Guide Markdown 변환 <- 완
-  * Guide Custom 변환
+  * Guide Custom 변환 <- 완
   * (가능하다면) css 발전시키기
   * 라이브용 빌드 변환
   * 라이브 테스트

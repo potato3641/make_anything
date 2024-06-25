@@ -132,7 +132,7 @@ async def upload_text(request: Request, content: str = Form(), prefix: SampleCon
     if not content:
         raise HTTPException(status_code=400, detail="text is empty")
     encoded_content = url_compress(content)
-    redirect_url = f"{prefix}/result/{encoded_content}"
+    redirect_url = f"{prefix.prefix}/result/{encoded_content}"
     response = RedirectResponse(url=redirect_url, status_code=307)
     return response
 

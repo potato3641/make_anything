@@ -1,3 +1,4 @@
+NGINX_PREFIX: /potato/api
 EXAMPLE_T2W:
 - |
   # 제목

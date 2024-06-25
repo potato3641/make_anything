@@ -22,7 +22,7 @@ def load_config_from_yaml(file_path: str):
             print(f"YAML 파일을 로드하는 중 오류가 발생했습니다: {e}")
             return {}
 
-    for key in ['EXAMPLE_T2W', 'EXAMPLE2_T2W', 'GUIDE_BASIC_T2W']:
+    for key in ['EXAMPLE_T2W', 'EXAMPLE2_T2W', 'GUIDE_BASIC_T2W', 'NGINX_PREFIX']:
         content = config.get(key, '')
         if isinstance(content, list):
             content = '\n'.join(content)
@@ -32,6 +32,7 @@ config_file = "sample.yaml"
 load_config_from_yaml(config_file)
 
 class SampleContent(BaseModel):
+    prefix: str = os.getenv("NGINX_PREFIX", "YAML LOAD ERROR")
     content: str = os.getenv("EXAMPLE_T2W", "YAML LOAD ERROR")
     content2: str = os.getenv("EXAMPLE2_T2W", "YAML LOAD ERROR")
     content3: str = os.getenv("GUIDE_BASIC_T2W", "YAML LOAD ERROR")
@@ -126,12 +127,12 @@ async def upload_file(request: Request, file: UploadFile = File(...)):
     return await upload_text(request, content.decode('utf-8'))
 
 @t2w_router.post("/uploadText/", response_class=HTMLResponse)
-async def upload_text(request: Request, content: str = Form()):
+async def upload_text(request: Request, content: str = Form(), prefix: SampleContent = Depends()):
     """텍스트 문자열 -> 프레젠테이션 변환 요청 처리"""
     if not content:
         raise HTTPException(status_code=400, detail="text is empty")
     encoded_content = url_compress(content)
-    redirect_url = f"/result/{encoded_content}"
+    redirect_url = f"{prefix}/result/{encoded_content}"
     response = RedirectResponse(url=redirect_url, status_code=307)
     return response
 

@@ -28,10 +28,9 @@ EXAMPLE_T2W:
   [하이퍼링크 글자](https://링크주소)
   ---
   ## 표
-  | 헤드 | 없어도됨 |
-  | ----- | ----- |
-  | 헤드가 | 필요없으면 |
-  | 내용만 | 작성해도됨 |
+  | 제목 | 쓰는곳 |
+  | --- | --- |
+  | 내용 | 확장가능 |
 EXAMPLE2_T2W:
 - |
   ## 배경색을 바꾸고싶다
@@ -86,7 +85,10 @@ EXAMPLE2_T2W:
   </a>
   ---
   ## 이 슬라이드는 안보일 것임
-  <!-- .slide:  data-visibility="hidden" -->
+  <!-- .slide: data-visibility="hidden" -->
+  ---
+  ## 이 슬라이드는 1초 뒤에 넘어감
+  <!-- .slide: data-autoslide="1000" -->
   ---
   ## 슬라이드 전환효과 변경
   - none
@@ -460,13 +462,10 @@ GUIDE_BASIC_T2W:
   <!-- .slide: data-auto-animate data-autoslide="700" -->
   <h1 style="color: tomato;">기억하세요!</h1>
   ---
-  <!-- .slide: data-auto-animate data-autoslide="700" -->
+  <!-- .slide: data-auto-animate data-autoslide="1000" -->
   | 제목 | 쓰는곳 |
   | --- | --- |
   | 내용 | 확장가능 |
-  <h1 style="color: tomato;">기억하세요!</h1>
-  ---
-  <!-- .slide: data-auto-animate data-autoslide="700" -->
   <h1 style="color: tomato;">기억하세요!</h1>
   ---
   <!-- .slide: data-auto-animate data-autoslide="2200" -->
@@ -476,6 +475,7 @@ GUIDE_BASIC_T2W:
   <h1 style="color: tomato;">기억하세요!</h1>
   ---
   <!-- .slide: data-auto-animate data-autoslide="1000" -->
-  # 끝
-  # 자세한건 심화편
+  ## 끝
+  ## 자세한건 심화편
+  ## 이거 슬라이드로 만든거임
   <h1><a href="#/0">다시보기</a></h1>

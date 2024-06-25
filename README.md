@@ -132,5 +132,18 @@
   * iframe은 example만 남기고 제거하고 슬라이드 넣어보자...
   * 해보다가 이거 안되겠다 이 프로젝트 미완성할거 아니면 뷰쓰거나 기왕 할거 리액트를 배워야겠다
 
+- [X] 9. url 관련 문제
+  * 첫 번째 문제, fastapi가 `/potato/api` 를 `/`처럼 받아야하는데 `/potato/api`로 받고 있음
+  * `rewrite ^/potato/api(.*)$ /$1 break;` 추가해서 `/potato/api`로 들어가면 `/`로 다시 url을 쓰도록 만듦
+  * 두 번째 문제, 루트로 진입하면 리액트가 아니라 500에러가 반겨줌
+  * `cat /var/log/nginx/error.log` 찾아보니 권한 문제라고함
+  * `sudo chmod -R 755 /home/ubuntu/make_anything/t2w-react/build` 권한을 올려주고
+  * `sudo vi /etc/nginx/nginx.conf` 상단에 user를 www-data가 아니라 ubuntu로 바꿔줌
+  * `sudo nginx -s reload` nginx 재시작
+  * 세 번째 문제, 해결한 줄 알았는데 `/potato/api`가 `/`까지는 잘 가는데 이후로 `//`로 들어감
+  * `rewrite ^/potato/api(.*)$ $1 break;`로 변경
+  * 네 번째 문제, form으로 전송한 `/uploadText/`(fastapi기준 발송)가 그대로 `/result/`(react기준 실행)로 가도록 반환시켜서 발생
+  * fastapi의 해당 부분을 모두 yaml로 변수화시켜 관리할 예정
+  * nginx에서 url에 변경이 생기면 yaml파일 하나만 바꾸면 됨
 </div>
 </details>

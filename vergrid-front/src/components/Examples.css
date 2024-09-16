@@ -1,0 +1,11 @@
+.ex {
+  border: 6px solid;
+}
+
+.bg-btn {
+  background-color: black;
+}
+
+.btn {
+  opacity: 0;
+}

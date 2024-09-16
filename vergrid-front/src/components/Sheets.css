@@ -1,0 +1,28 @@
+.sheet-body {
+  height: 100vh;
+}
+
+.grid-container {}
+
+.grid-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid gray;
+  height: 56px;
+}
+
+.cell-cover {
+  flex-grow: 1;
+  width: 100%;
+  height: 56px;
+  opacity: 0;
+}
+
+.cell-body {
+  height: auto;
+}
+
+.hidden {
+  display: none;
+}

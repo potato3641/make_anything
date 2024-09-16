@@ -57,3 +57,10 @@
  - react-data-grid ? 하루종일 cell select기능이 안돼서 유기
  - ag-grid ? 이야 이거 쓸만하다~ 하는 기능이 유료라 유기
  - react-data-grid ? 다시 시도해보겠음...
+ - 이것도 e버전 유료라 유기
+ - css 신경 안쓰려고 mui material 갖다쓰려고 만져보는중
+ - 시트 구성은 어떻게?
+ 	 - 10x10에 왼쪽과 위쪽에 tab selector가 있고 각 셀을 그리드로 구현
+	 - 다행히 Textfield가 multiline과 fullwidth로 내가 원하는 구현이 가능
+	 - 시트 기능 우선순위 설정이 필요한데 뭘 할 수 있는지 모르니 일단 구현부터
+ - 시트 입력 Button과 TextField의 스위칭은 했는데 이걸 display:none으로 구현해버려서 TextField에 값을 넣어도 다시 Button을 클릭하기 전까지 TextField의 값을 알 수 없는 현상이 있음. 이걸 구조를 바꿔서 해결해야함 두개의 z-index를 바꾼다던지 하는 식으로...

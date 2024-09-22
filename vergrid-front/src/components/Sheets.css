@@ -2,21 +2,25 @@
   height: 100vh;
 }
 
-.grid-container {}
-
-.grid-item {
+.grid-container {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.grid-item {
   border: 1px solid gray;
   height: 56px;
 }
 
 .cell-cover {
-  flex-grow: 1;
   width: 100%;
   height: 56px;
-  opacity: 0;
+  overflow: hidden;
+}
+
+.cell-focused {
+  border: 3px solid #4f94df;
 }
 
 .cell-body {

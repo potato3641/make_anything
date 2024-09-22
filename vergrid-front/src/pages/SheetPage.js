@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Typography from '@mui/material/Typography';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -12,7 +12,7 @@ const SheetPage = () => {
           <Typography variant="h6">Top Nav bar (None)</Typography>
         </Toolbar>
       </AppBar>
-      <Sheets></Sheets>
+      <Sheets size={15} />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
 import './Sheets.css';
 
 const Sheets = ({ size }) => {
@@ -48,22 +49,29 @@ const Sheets = ({ size }) => {
 
   // 셀 편집모드 열기 (FocusTarget의 TextField 초기화)
   const openTextEditor = (key) => {
+    console.log('gated', key, cellValues[key], inputRef.current)
     setTouchTarget(null);
     setFocusTarget(key);
     setFocusTargetValue(cellValues[key] || '')
+    const value = (cellValues[key] || '') + ''
+    inputRef.current = value + ''
+    setRefMode(false);
   }
 
   // 셀 편집모드 닫기 (FocusTarget의 TextField 데이터 저장)
   const exitTextEditor = (key = focusTarget, value = inputRef.current) => {
     setFocusTarget(null);
+    setFocusTargetValue(undefined);
     updateCellData(key, value)
     setRefMode(false);
   }
 
-  // 포커싱된 셀의 커서 동작 제어
-  const moveFocusTargetCursor = (i, j, event) => {
-    // 준비중
+  // 포커싱된 셀의 커서 위치 제어
+  const moveFocusTargetCursor = (event) => {
+    const length = inputRef.current.length;
+    event.target.setSelectionRange(length, length);
   }
+
   // 셀 언포커싱 이벤트 핸들러
   const handlerUnfoucedTarget = (i, j, event) => {
     if (refMode) return;
@@ -78,6 +86,9 @@ const Sheets = ({ size }) => {
     }
     // 대상 없는 시트 전체 이벤트 핸들러(시트 컴포넌트 한정)
     // 시트 이벤트 핸들러는 touchTarget이 무조건 존재함
+    if (event.key === '`') { // DEBUG : 로그찍기용
+      console.log(focusTarget, focusTargetValue)
+    }
     if (!layer && !(touchTarget === null)) {
       const regex = /\$([0-9]+)\$([0-9]+)/;
       const match = touchTarget.match(regex);
@@ -126,9 +137,9 @@ const Sheets = ({ size }) => {
     4. onBlur를 막아야함
     */
     const key = `$${i}$${j}`;
-    inputRef.current += key
-    setFocusTargetValue(inputRef.current)
-    focusTargetRef.current[focusTarget].value += key;
+    setFocusTargetValue(inputRef.current + key) // 스태틱 데이터 갱신필요
+    focusTargetRef.current[focusTarget].value = inputRef.current + key; // 텍스트필드 데이터 갱신필요
+    inputRef.current += key // 오브젝트 데이터 갱신필요
     focusTargetRef.current[focusTarget].focus();
   };
 
@@ -202,24 +213,26 @@ const Sheets = ({ size }) => {
                 onBlur={(event) => handlerUnfoucedTarget(i, j, event)}
                 onChange={(event) => handlerTextChange(i, j, event)}
                 onKeyDown={(event) => handlerKeyDown(event)}
-                onFocus={(event) => moveFocusTargetCursor(i, j, event)}
+                onFocus={(event) => moveFocusTargetCursor(event)}
                 inputRef={(e) => (focusTargetRef.current[`$${i}$${j}`] = e)}
                 defaultValue={focusTargetValue}
                 className='cell-body'
                 variant="outlined" multiline fullWidth autoFocus />
             ) : (
-              <Button
-                onDoubleClick={() => handlerDoubleClickCell(i, j)}
-                onClick={() => handlerClickCell(i, j)}
-                className='cell-cover'
-                variant="text">
-                {calFormula(cellValues[`$${i}$${j}`]) || ''}
-              </Button>
+              <Tooltip title={`${i}-${j}`} >
+                <Button
+                  onDoubleClick={() => handlerDoubleClickCell(i, j)}
+                  onClick={() => handlerClickCell(i, j)}
+                  className='cell-cover'
+                  variant="text">
+                  {calFormula(cellValues[`$${i}$${j}`]) || ''}
+                </Button>
+              </Tooltip>
             )}
           </Grid>
         ))}
       </Grid>
-    </div>
+    </div >
   );
 };
 

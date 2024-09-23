@@ -68,5 +68,10 @@
  - 시트에 함수를 넣는건 구현 우선순위 잠시 뒤로 미룸
  - 시트 계산이 사칙연산만 됨(괄호계산도 안됨)
  - 시트의 row와 column을 관리하는 탭이 필요할까?
-   - 일단 구현해보고 추후에 지우는것으로
+	 - 일단 구현해보고 추후에 지우는것으로
 	 - 그러면 이게 Sheets 컴포넌트에 같이 있을 필요가 있나? 가뜩이나 코드가 길긴함
+ - 문제 발생. TextChange가 최신화와 데이터 동기화를 겸하는중이라 입력시 렌더링이 무진장 길다
+ 	 - TextField의 value를 useState로 잡은 focusTargetValue로 만들고 이걸 useRef로 잡아다 관리하기
+	 - refMode의 셀 편집 기능 사용 시 useRef로 잡은 타겟이 변경된다
+	 - focusTargetValue를 value가 아니라 defaultValue로 변경했음
+	 - TextField의 value는 관리를 focusTargetRef로 따로 관리함(데이터 저장은 cellValues, 객체 저장은 focusTargetRef가)

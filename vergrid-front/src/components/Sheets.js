@@ -14,21 +14,23 @@ const Sheets = ({ size }) => {
     }
   }
 
-  const [refMode, setRefMode] = useState(false);
-  const [cellValues, setCellValues] = useState({});
-  const [focusTarget, setFocusTarget] = useState(null); // TextField Fouce Target
-  const [touchTarget, setTouchTarget] = useState(null); // TextField Touch Target
-  const focusTargetRef = useRef({});
+  const [refMode, setRefMode] = useState(false); // Flag of Reference Mode
+  const [cellValues, setCellValues] = useState({}); // Sheet Live Value
+  const [focusTarget, setFocusTarget] = useState(null); // TextField Fouce Target Key
+  const [touchTarget, setTouchTarget] = useState(null); // TextField Touch Target Key
+  const [focusTargetValue, setFocusTargetValue] = useState(undefined); // TextField Live Value
+  const focusTargetRef = useRef({}); // Sheet Live Object
+  const inputRef = useRef(''); // TextField Live Object
 
-  // 셀 더블클릭 이벤트
+  // 셀 더블클릭 이벤트 핸들러
   const handlerDoubleClickCell = (i, j) => {
     if (!refMode) {
-      setTouchTarget(null);
-      setFocusTarget(`$${i}$${j}`);
+      const key = `$${i}$${j}`;
+      openTextEditor(key)
     }
   };
 
-  // 셀 클릭 이벤트
+  // 셀 클릭 이벤트 핸들러
   const handlerClickCell = (i, j) => {
     if (refMode)
       referenceMode(i, j);
@@ -36,29 +38,46 @@ const Sheets = ({ size }) => {
       setTouchTarget(`$${i}$${j}`);
   }
 
-  // 셀 업데이트
-  const updateCellValue = (key, value) => {
+  // 셀 데이터(Value) 업데이트
+  const updateCellData = (key, value) => {
     setCellValues({
       ...cellValues,
       [key]: value,
     });
   };
 
-  // 셀 언포커싱
+  // 셀 편집모드 열기 (FocusTarget의 TextField 초기화)
+  const openTextEditor = (key) => {
+    setTouchTarget(null);
+    setFocusTarget(key);
+    setFocusTargetValue(cellValues[key] || '')
+  }
+
+  // 셀 편집모드 닫기 (FocusTarget의 TextField 데이터 저장)
+  const exitTextEditor = (key = focusTarget, value = inputRef.current) => {
+    setFocusTarget(null);
+    updateCellData(key, value)
+    setRefMode(false);
+  }
+
+  // 포커싱된 셀의 커서 동작 제어
+  const moveFocusTargetCursor = (i, j, event) => {
+    // 준비중
+  }
+  // 셀 언포커싱 이벤트 핸들러
   const handlerUnfoucedTarget = (i, j, event) => {
     if (refMode) return;
-    setFocusTarget(null);
-    const key = `$${i}$${j}`;
-    updateCellValue(key, event.target.value);
-    // console.log(`recently added - key : [${key}], values : [${event.target.value}]`)
+    exitTextEditor(focusTarget)
   };
 
-  // 키 입력 반응
+  // 셀 키 입력 이벤트 핸들러
   const handlerKeyDown = (event, layer = true) => {
+    // 단일 타겟(ex - TextField)의 이벤트 핸들러
     if (layer && event.key === 'Enter') {
-      setFocusTarget(null);
-      setRefMode(false);
+      exitTextEditor(focusTarget);
     }
+    // 대상 없는 시트 전체 이벤트 핸들러(시트 컴포넌트 한정)
+    // 시트 이벤트 핸들러는 touchTarget이 무조건 존재함
     if (!layer && !(touchTarget === null)) {
       const regex = /\$([0-9]+)\$([0-9]+)/;
       const match = touchTarget.match(regex);
@@ -70,32 +89,33 @@ const Sheets = ({ size }) => {
         setTouchTarget(`$${parseFloat(match[1])}$${parseFloat(match[2]) ? parseFloat(match[2]) - 1 : 0}`);
       if (event.key === 'ArrowRight')
         setTouchTarget(`$${parseFloat(match[1])}$${parseFloat(match[2]) < sizeOfSheet - 1 ? parseFloat(match[2]) + 1 : sizeOfSheet - 1}`);
-      if (event.key === 'Enter') {
-        event.preventDefault();
+      if (event.key === 'Enter' || event.key === '=') { // 터치모드에서 엔터
+        if (event.key === 'Enter')
+          event.preventDefault();
         const key = `$${match[1]}$${match[2]}`;
-        setTouchTarget(null);
-        setFocusTarget(key);
-        setRefMode(true);
+        openTextEditor(key);
+        if (event.key === '=')
+          setRefMode(true);
       }
       if (event.key === 'Delete') {
         const key = `$${match[1]}$${match[2]}`;
-        updateCellValue(key, '');
+        updateCellData(key, '');
       }
     }
   };
 
-  // 셀 입력 반응
+  // 셀 텍스트 입력 제어 (플래그 제어용)
   const handlerTextChange = (i, j, event) => {
     const value = event.target.value;
     if (!refMode && value.startsWith("="))
       setRefMode(true);
     else if (refMode && !value.startsWith("="))
       setRefMode(false);
-    const key = `$${i}$${j}`;
-    updateCellValue(key, value)
+    // 업뎃을 여기서 하면 안된다(렌더링 지연의 원인)
+    inputRef.current = event.target.value;
   };
 
-  // 셀 수식모드
+  // 셀 주소 획득 모드
   const referenceMode = (i, j) => {
     if (!refMode) return;
     /* 진입 조건 정리
@@ -106,7 +126,9 @@ const Sheets = ({ size }) => {
     4. onBlur를 막아야함
     */
     const key = `$${i}$${j}`;
-    updateCellValue(focusTarget, cellValues[focusTarget] + key);
+    inputRef.current += key
+    setFocusTargetValue(inputRef.current)
+    focusTargetRef.current[focusTarget].value += key;
     focusTargetRef.current[focusTarget].focus();
   };
 
@@ -177,18 +199,19 @@ const Sheets = ({ size }) => {
           <Grid className={'grid-item' + (touchTarget === `$${i}$${j}` ? ' cell-focused' : '')} item xs={12 / sizeOfSheet} key={`$${i}$${j}`}>
             {focusTarget === `$${i}$${j}` ? (
               <TextField
-                inputRef={(e) => (focusTargetRef.current[`$${i}$${j}`] = e)}
-                value={cellValues[`$${i}$${j}`] || ''}
-                className='cell-body'
                 onBlur={(event) => handlerUnfoucedTarget(i, j, event)}
                 onChange={(event) => handlerTextChange(i, j, event)}
                 onKeyDown={(event) => handlerKeyDown(event)}
+                onFocus={(event) => moveFocusTargetCursor(i, j, event)}
+                inputRef={(e) => (focusTargetRef.current[`$${i}$${j}`] = e)}
+                defaultValue={focusTargetValue}
+                className='cell-body'
                 variant="outlined" multiline fullWidth autoFocus />
             ) : (
               <Button
-                className='cell-cover'
                 onDoubleClick={() => handlerDoubleClickCell(i, j)}
                 onClick={() => handlerClickCell(i, j)}
+                className='cell-cover'
                 variant="text">
                 {calFormula(cellValues[`$${i}$${j}`]) || ''}
               </Button>

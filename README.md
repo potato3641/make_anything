@@ -72,6 +72,8 @@
 	 - 그러면 이게 Sheets 컴포넌트에 같이 있을 필요가 있나? 가뜩이나 코드가 길긴함
  - 문제 발생. TextChange가 최신화와 데이터 동기화를 겸하는중이라 입력시 렌더링이 무진장 길다
  	 - TextField의 value를 useState로 잡은 focusTargetValue로 만들고 이걸 useRef로 잡아다 관리하기
-	 - refMode의 셀 편집 기능 사용 시 useRef로 잡은 타겟이 변경된다
+	 - refMode의 셀 편집 기능 사용 시 useRef로 잡은 타겟이 변경되는 문제가 발생...
 	 - focusTargetValue를 value가 아니라 defaultValue로 변경했음
 	 - TextField의 value는 관리를 focusTargetRef로 따로 관리함(데이터 저장은 cellValues, 객체 저장은 focusTargetRef가)
+ - 문제 발생. TextChange를 바꿨더니 reference모드가 아닌데도 클릭 셀의 데이터를 가져온다
+	 - 완료. static/object/TextField 세 값을 모두 관리해야했는데 중간에 섞인 문제였음

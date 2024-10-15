@@ -95,7 +95,7 @@ const Examples = () => {
   const handleSnackClose = () => setOpenSnack(false);
 
   return (
-    <div>
+    <div className='ex-body'>
       <div className='ex'> {/*팝오버 심화 예제*/}
         <div>
           <Button aria-describedby="simple-popover" onClick={handlePopoverClick2}>

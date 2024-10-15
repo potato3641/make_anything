@@ -1,11 +1,12 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
+// import Skeleton from '@mui/material/Skeleton';
 import './Sheets.css';
 
-const Sheets = ({ size }) => {
+const Sheets = forwardRef(({ size, toolbarHeight, saveData, inheritData }, ref) => {
   const sizeOfSheet = size;
   const gridIndex = [];
   const maximumsize = 1000;
@@ -16,12 +17,22 @@ const Sheets = ({ size }) => {
   }
 
   const [refMode, setRefMode] = useState(false); // Flag of Reference Mode
-  const [cellValues, setCellValues] = useState({}); // Sheet Live Value
+  const [cellValues, setCellValues] = useState(inheritData || {}); // Sheet Live Value
   const [focusTarget, setFocusTarget] = useState(null); // TextField Fouce Target Key
   const [touchTarget, setTouchTarget] = useState(null); // TextField Touch Target Key
   const [focusTargetValue, setFocusTargetValue] = useState(undefined); // TextField Live Value
   const focusTargetRef = useRef({}); // Sheet Live Object
   const inputRef = useRef(''); // TextField Live Object
+
+  useImperativeHandle(ref, () => ({
+    getCellValues() {
+      return cellValues;
+    },
+  }));
+
+  useEffect(() => {
+    setCellValues(inheritData || {});
+  }, [inheritData]);
 
   // 셀 더블클릭 이벤트 핸들러
   const handlerDoubleClickCell = (i, j) => {
@@ -49,7 +60,6 @@ const Sheets = ({ size }) => {
 
   // 셀 편집모드 열기 (FocusTarget의 TextField 초기화)
   const openTextEditor = (key) => {
-    console.log('gated', key, cellValues[key], inputRef.current)
     setTouchTarget(null);
     setFocusTarget(key);
     setFocusTargetValue(cellValues[key] || '')
@@ -87,7 +97,7 @@ const Sheets = ({ size }) => {
     // 대상 없는 시트 전체 이벤트 핸들러(시트 컴포넌트 한정)
     // 시트 이벤트 핸들러는 touchTarget이 무조건 존재함
     if (event.key === '`') { // DEBUG : 로그찍기용
-      console.log(focusTarget, focusTargetValue)
+      console.log(cellValues)
     }
     if (!layer && !(touchTarget === null)) {
       const regex = /\$([0-9]+)\$([0-9]+)/;
@@ -204,7 +214,7 @@ const Sheets = ({ size }) => {
   }
 
   return (
-    <div className='sheet-body' onKeyDown={(event) => handlerKeyDown(event, false)}>
+    <div className='sheet-body' onKeyDown={(event) => handlerKeyDown(event, false)} style={{ height: `calc(100vh - ${toolbarHeight}px)`, overflow: 'auto' }}>
       <Grid className='grid-container' container spacing={0}>
         {gridIndex.map(({ i, j }) => (
           <Grid className={'grid-item' + (touchTarget === `$${i}$${j}` ? ' cell-focused' : '')} item xs={12 / sizeOfSheet} key={`$${i}$${j}`}>
@@ -217,6 +227,11 @@ const Sheets = ({ size }) => {
                 inputRef={(e) => (focusTargetRef.current[`$${i}$${j}`] = e)}
                 defaultValue={focusTargetValue}
                 className='cell-body'
+                slotProps={{
+                  htmlInput: {
+                    maxLength: 255,
+                  },
+                }}
                 variant="outlined" multiline fullWidth autoFocus />
             ) : (
               <Tooltip title={`${i}-${j}`} >
@@ -234,6 +249,6 @@ const Sheets = ({ size }) => {
       </Grid>
     </div >
   );
-};
+});
 
 export default Sheets;

@@ -9,3 +9,7 @@
 .btn {
   opacity: 0;
 }
+
+body {
+  overflow: hidden;
+}

@@ -8,6 +8,7 @@
 
  - 대충 내가 쓰는 캘린더/시트/알람 사용하는 프로그램을 내 취향에 시트 위주로 통합한것
  - 내가 쓰는 캘린더/시트/알람을 버리고 이걸 사용하면 와 이거지 하면서 쓸 수 있게 만들기가 목표
+ - "내"가 클라이언트이기 때문에 만들면서 타협할 기능이 절대 없음
 
 ### 주제
 
@@ -25,7 +26,8 @@
  - 타협하기 시작하면 끝이없다
  - 일정을 너무 러프하게 했다
  - 커피를 적당히
- - 추석이 껴있으므로 쉬는게 아니라 추석까지 완성하는 느낌으로(러프한가?)
+ - ~~추석이 껴있으므로 쉬는게 아니라 추석까지 완성하는 느낌으로(러프한가?)~~ 러프했다
+ - 몇일 연속으로 하는게 안되니 할 수 있는 날에 진짜 개 집중해서 하는걸로
  - 사 용 성 제 발 개 떡 같 이 말 고 진 짜 개 선
  - 대충 부트스트랩썼다 말다 iframe썼다 말다 reveal썼다 말다 react대충 쓰다 꽥 한 느낌이 없잖아 있으니 부트스트랩으로 fix
  - 테스트를 나만해봤으니... 테스트좀 해보자
@@ -77,3 +79,20 @@
 	 - TextField의 value는 관리를 focusTargetRef로 따로 관리함(데이터 저장은 cellValues, 객체 저장은 focusTargetRef가)
  - 문제 발생. TextChange를 바꿨더니 reference모드가 아닌데도 클릭 셀의 데이터를 가져온다
 	 - 완료. static/object/TextField 세 값을 모두 관리해야했는데 중간에 섞인 문제였음
+ - css 지금 이상한거 알지? 이거 해결하려면 탭 넣을지 빨리 결정해야함
+	 - 안넣는게 좋을거같은데 이게 완전 시트로 구현하는게 아니라서
+	 - 안넣을거면 Shift + 클릭으로 currentRegion구현해야함
+	 - 그리고 안넣는거 확정이라면 스크롤부분 문제있는거 고치고 개발을 시작하십시오
+	 - 스크롤은 개선됨, currentRegion 남음
+ - 사칙연산 외에 괄호 계산과 함수 넣는거 시작해보자
+	 - 일단이중 레퍼런스 문제 해결해야함
+	 - &는 텍스트 붙이기전용으로(지금은 +로 사용중임)
+	 - 괄호는 괄호임
+	 - : 콜론 붙여서 여러 셀을 인식할 수 있어야함
+	 - 함수기본적인것 if and or sum average product 순으로 해보자
+ - 시트 save&load 구현 중 발생한 문제 처리
+	 - 구현하다 tab change 이후 데이터가 없는 탭에서 시트 생성하면 이전 탭의 셀 데이터가 남아있는 오류 발생
+	 - if문에 걸려있는 null때문에 넘어가나 하고 false로 바꿔줌 -> 간략해지긴했는데 문제는 그대로
+	 - useEffect쓰면 렌더링될때마다 되겠다 하고 inheritData를 useEffect로 상시 초기화하도록함 -> 순환 오류 발생
+	 - 찾아보니 useState는 "최초 렌더링" 할 때만 초기화하고 그 이후는 useEffect로 하기 때문에 `const initData = inheritData || {}; const [cellValues, setCellValues] = useState(initData)`대신 `const [cellValues, setCellValues] = useState(inheritData || {});`로 조정하고 useEffect 내에서 다시 setCellValues를 호출하는것으로 변경
+	 - SheetPage에서 데이터가 없을 때 tc는 inheritData를 null로, confirm때는 inheritData를 false로 하도록 하여 inheritData의 변경점을 설정함(어차피 inheritData가 null이면 무조건 사용자가 confirm을 해야 새 시트가 나오게 되어있음)

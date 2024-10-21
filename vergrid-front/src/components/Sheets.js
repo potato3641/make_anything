@@ -82,6 +82,9 @@ const Sheets = forwardRef(({ size, toolbarHeight, saveData, inheritData }, ref) 
   }
 
   // 레퍼런스모드 on/off 체크
+  // 여기에 글꼴변경모드 넣는게 맞다
+  // 종료시점은? exitTextEditor실행시에 하게하면됨
+  // 폐기됨. 사유 : html에 넣으면 적용이 아니라 span이 그대로 나옴 ㅋㅋ;
   const isReferenceOkay = (val) => { // 사칙연산도 추가해야함ㅠ
     if (val === undefined)
       return false;
@@ -103,14 +106,16 @@ const Sheets = forwardRef(({ size, toolbarHeight, saveData, inheritData }, ref) 
     // console.log(`checker option 5 : ${strAfterRef === (lastRef?.value + '/')}`)
     // console.log(`checker option 6 : ${strAfterRef === lastRef?.value}`)
     // console.log(`DEBUG : ${lastRef?.value + '+'}`)
-    return (val && // 정상값인지
-      val?.startsWith("=") && ( // 수식모드인지
-        strAfterRef === (lastRef?.value + '+') || // 수식 도중인지
-        strAfterRef === (lastRef?.value + '-') || // 수식 도중인지
-        strAfterRef === (lastRef?.value + '*') || // 수식 도중인지
-        strAfterRef === (lastRef?.value + '/') || // 수식 도중인지
-        strAfterRef === lastRef?.value // Ref참인지
+    const result = (val && // 정상값인지
+      val.startsWith("=") && ( // 수식모드인지
+        val.charAt(val.length - 1) === '(' || // 수식 괄호 전개중인지
+        val.charAt(val.length - 1) === '+' || // 수식 도중인지
+        val.charAt(val.length - 1) === '-' || // 수식 도중인지
+        val.charAt(val.length - 1) === '*' || // 수식 도중인지
+        val.charAt(val.length - 1) === '/' || // 수식 도중인지
+        strAfterRef === lastRef?.value // 수식모드지만 아직 Ref가 없는지
       ));
+    return result
   }
 
   // 셀 편집모드 닫기 (FocusTarget의 TextField 데이터 저장)
@@ -224,7 +229,12 @@ const Sheets = forwardRef(({ size, toolbarHeight, saveData, inheritData }, ref) 
     return null;  // 매칭이 없을 때
   };
 
+  const isNumeric = (value) => !isNaN(value) && !isNaN(parseFloat(value)); // 문자판별함수
+
   // 셀 계산
+  // 현행 : 문자열은 단순 +로 합침 / 계산식 괄호없음 << 완
+  // 과도기 : 문자열 &로 합침 / 계산식 괄호추가 << 완
+  // 완성 : 문자열 &로 합치는 대신 문자는 ""로 감싸기 << 대기중
   const calFormula = (formula, funcall = 0) => {
     if (!formula?.startsWith("="))
       return formula;
@@ -232,56 +242,66 @@ const Sheets = forwardRef(({ size, toolbarHeight, saveData, inheritData }, ref) 
       throw new Error(`순환 참조 오류 발생 ${funcall}번째 호출`);
     const target = formula.slice(1);
     const regex = /\$([0-9]+)\$([0-9]+)/g; // $n$n을 모두(g) 검색
-    const keys = [...target.matchAll(regex)]; // 검색결과 정리
+    const keys = [...new Set(target.matchAll(regex))]; // 검색결과 정리
     let replacedTarget = target;
+    let combineTarget = target.replaceAll('&', '');
     let numericFlag = true; // 문자판별기
-    const isNumeric = (value) => !isNaN(value) && !isNaN(parseFloat(value)); // 문자판별함수
 
     keys.forEach((match) => {
       const key = `$${match[1]}$${match[2]}`;
-      const value = calFormula(cellValues[key], funcall + 1) || 0;
-      numericFlag &= isNumeric(value); // 문자판별중
-      replacedTarget = replacedTarget.replace(key, value);
+      const numValue = calFormula(cellValues[key], funcall + 1) || 0;
+      const strValue = calFormula(cellValues[key], funcall + 1) || '';
+      numericFlag &= isNumeric(numValue); // 문자판별중
+      replacedTarget = replacedTarget.replaceAll(key, numValue);
+      combineTarget = combineTarget.replaceAll(key, strValue);
     });
 
-    if (!numericFlag) { // 문자 감지됨 escape
-      let combineTarget = target.replaceAll('+', '');
-      keys.forEach((match) => {
-        const key = `$${match[1]}$${match[2]}`;
-        const value = calFormula(cellValues[key], funcall + 1) || '';
-        combineTarget = combineTarget.replace(key, value);
-      });
+    if (!numericFlag) // 문자 감지됨 escape
       return combineTarget;
-    }
 
-    const parts = replacedTarget.split(/([+\-*/])/); // 사칙연산분리
-    let result = parts[0];
+    const parts = replacedTarget.split(/([()+\-*/])/).filter(Boolean); // 사칙연산분리 및 빈배열 처리
+    const result = calRecursiveBracket(parts);
+    return result;
+  }
 
-    for (let i = 1; i < parts.length; i += 2) {
-      const target = parts[i];
-      const nextValue = parts[i + 1];
-      result = parseFloat(result);
-      const nextNumber = parseFloat(nextValue);
+  // 재귀적 괄호 처리
+  const calRecursiveBracket = (parts) => {
+    let stack = [];
+    let opCurrent = '+';
 
-      switch (target) {
-        case '+':
-          result += nextNumber;
-          break;
-        case '-':
-          result -= nextNumber;
-          break;
-        case '*':
-          result *= nextNumber;
-          break;
-        case '/':
-          result /= nextNumber;
-          break;
-        default:
-          break;
+    while (parts.length) {
+      let part = parts.shift();
+
+      if (part === '(') {
+        const subResult = calRecursiveBracket(parts);
+        stack.push(subResult);
+      } else if (part === ')') {
+        break;
+      } else if (['+', '-', '*', '/'].includes(part)) {
+        opCurrent = part;
+      } else if (!isNaN(part)) {
+        let value = parseFloat(part);
+
+        switch (opCurrent) {
+          case '+':
+            stack.push(value);
+            break;
+          case '-':
+            stack.push(-value);
+            break;
+          case '*':
+            stack[stack.length - 1] *= value;
+            break;
+          case '/':
+            stack[stack.length - 1] /= value;
+            break;
+          default:
+            break;
+        }
       }
     }
-    return result;
 
+    return stack.reduce((acc, val) => acc + val, 0);
   }
 
   return (

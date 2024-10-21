@@ -71,6 +71,7 @@ const SheetPage = () => {
   }
 
   const [tabValue, setTabValue] = useState(() => {
+    // useEffect에 사용 불가 및 TabValue로 묶을 수 없음
     loadTabData(savedTabValue);
     return 0;
   });

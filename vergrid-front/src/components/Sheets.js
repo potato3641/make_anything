@@ -44,10 +44,15 @@ const Sheets = forwardRef(({ size, toolbarHeight, saveData, inheritData }, ref) 
 
   // 셀 클릭 이벤트 핸들러
   const handlerClickCell = (i, j) => {
-    if (refMode)
-      referenceMode(i, j);
-    else
-      setTouchTarget(`$${i}$${j}`);
+    if (refMode) {
+      // console.log(isReferenceOkay(focusTargetRef.current[focusTarget]?.value))
+      if (isReferenceOkay(focusTargetRef.current[focusTarget]?.value)) {
+        referenceMode(i, j);
+        return;
+      }
+    }
+    exitTextEditor();
+    setTouchTarget(`$${i}$${j}`);
   }
 
   // 셀 데이터(Value) 업데이트
@@ -65,7 +70,47 @@ const Sheets = forwardRef(({ size, toolbarHeight, saveData, inheritData }, ref) 
     setFocusTargetValue(cellValues[key] || '')
     const value = (cellValues[key] || '') + ''
     inputRef.current = value + ''
-    setRefMode(false);
+    // 여기서 하는게 맞다 =랑 ref 판별돌려서
+    // active HTMlTextField를 클릭떄 확인시켜야함
+    // 레퍼런스모드에서 처리해야하나?
+    // 클릭모드에서 해야한다 왜냐하면 클릭할때만 발생하는 문제이기때문
+    // console.log(`focus target : ${key}`)
+    // console.log(`html value ${focusTargetRef.current[key]?.value}`)
+    // console.log(`cell values in open editor : ${cellValues[key]}`)
+    // console.log(`reference checker : ${isReferenceOkay(cellValues[key])}`)
+    setRefMode(isReferenceOkay(cellValues[key]));
+  }
+
+  // 레퍼런스모드 on/off 체크
+  const isReferenceOkay = (val) => { // 사칙연산도 추가해야함ㅠ
+    if (val === undefined)
+      return false;
+    // console.log(`checker inside : ${val}`)
+    const target = findLastRef(val);
+    if (val === "=" || target === "=")
+      return true;
+    const lastRef = findLastMatchIndex(target);
+    const strAfterRef = target.substring(lastRef?.index);
+    // console.log(`checker inside target : ${target}`)
+    // console.log(`checker inside lastRef val : ${lastRef?.value}`)
+    // console.log(`checker inside lastRef idx : ${lastRef?.index}`)
+    // console.log(`checker inside lastRef ttl : ${lastRef?.total}`)
+    // console.log(`checker inside valAfterRef : ${strAfterRef}`)
+    // console.log(`checker option 1 : ${val?.startsWith("=")}`)
+    // console.log(`checker option 2 : ${strAfterRef === (lastRef?.value + '+')}`)
+    // console.log(`checker option 3 : ${strAfterRef === (lastRef?.value + '-')}`)
+    // console.log(`checker option 4 : ${strAfterRef === (lastRef?.value + '*')}`)
+    // console.log(`checker option 5 : ${strAfterRef === (lastRef?.value + '/')}`)
+    // console.log(`checker option 6 : ${strAfterRef === lastRef?.value}`)
+    // console.log(`DEBUG : ${lastRef?.value + '+'}`)
+    return (val && // 정상값인지
+      val?.startsWith("=") && ( // 수식모드인지
+        strAfterRef === (lastRef?.value + '+') || // 수식 도중인지
+        strAfterRef === (lastRef?.value + '-') || // 수식 도중인지
+        strAfterRef === (lastRef?.value + '*') || // 수식 도중인지
+        strAfterRef === (lastRef?.value + '/') || // 수식 도중인지
+        strAfterRef === lastRef?.value // Ref참인지
+      ));
   }
 
   // 셀 편집모드 닫기 (FocusTarget의 TextField 데이터 저장)
@@ -146,11 +191,37 @@ const Sheets = forwardRef(({ size, toolbarHeight, saveData, inheritData }, ref) 
       - 클릭된 셀의 i, j를 받아옴
     4. onBlur를 막아야함
     */
+
+    const target = findLastRef(inputRef.current);
     const key = `$${i}$${j}`;
-    setFocusTargetValue(inputRef.current + key) // 스태틱 데이터 갱신필요
-    focusTargetRef.current[focusTarget].value = inputRef.current + key; // 텍스트필드 데이터 갱신필요
-    inputRef.current += key // 오브젝트 데이터 갱신필요
+    setFocusTargetValue(target + key) // Target 데이터 갱신필요
+    focusTargetRef.current[focusTarget].value = target + key; // HTMLTextField 데이터 갱신필요
+    inputRef.current = target + key // Object 데이터 갱신필요
     focusTargetRef.current[focusTarget].focus();
+  };
+
+  const findLastRef = (target) => {
+    const regex = /\$([0-9]+)\$([0-9]+)/g;
+    const lastRef = findLastMatchIndex(target, regex);
+    if (target && lastRef) {
+      if (target.substring(lastRef.index) === lastRef.value)
+        target = target.substring(0, target.length - lastRef.value.length)
+    }
+    return target
+  }
+
+  const findLastMatchIndex = (str, regex = /\$([0-9]+)\$([0-9]+)/g) => {
+    let matchArray = [...str.matchAll(regex)];
+
+    if (matchArray.length > 0) {
+      const lastMatch = matchArray[matchArray.length - 1];
+      return {
+        value: lastMatch[0],
+        index: lastMatch.index,
+        total: matchArray.length
+      };
+    }
+    return null;  // 매칭이 없을 때
   };
 
   // 셀 계산

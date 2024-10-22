@@ -29,7 +29,7 @@
  - ~~추석이 껴있으므로 쉬는게 아니라 추석까지 완성하는 느낌으로(러프한가?)~~ 러프했다
  - 몇일 연속으로 하는게 안되니 할 수 있는 날에 진짜 개 집중해서 하는걸로
  - 사 용 성 제 발 개 떡 같 이 말 고 진 짜 개 선
- - 대충 부트스트랩썼다 말다 iframe썼다 말다 reveal썼다 말다 react대충 쓰다 꽥 한 느낌이 없잖아 있으니 부트스트랩으로 fix
+ - 대충 부트스트랩썼다 말다 iframe썼다 말다 reveal썼다 말다 react대충 쓰다 꽥 한 느낌이 없잖아 있으니 부트스트랩으로 fix -> mui material로 선회
  - 테스트를 나만해봤으니... 테스트좀 해보자
 
 ### 기능 개발 기획(마인드맵)
@@ -48,9 +48,9 @@
 	 - 그래픽 시트도 있다면 좋을텐데 이건 배운다면
 	 - 협업용
  3. 1차 기능 우선순위 정리
-	 - 셀 시트 구현
-	 - 셀 시트 데이터 로컬스토리지 저장
-	 - 셀 시트 데이터 ref기반 연산식 확인
+	 - ~~셀 시트 구현~~
+	 - ~~셀 시트 데이터 로컬스토리지 저장~~
+	 - ~~셀 시트 데이터 ref기반 연산식 확인~~
 	 - 셀 시트 기반 기본함수 구현
 	 - 셀 예약동작 구현(동작 아이디어 생각중...)
 
@@ -94,5 +94,11 @@
 	 - 구현하다 tab change 이후 데이터가 없는 탭에서 시트 생성하면 이전 탭의 셀 데이터가 남아있는 오류 발생
 	 - if문에 걸려있는 null때문에 넘어가나 하고 false로 바꿔줌 -> 간략해지긴했는데 문제는 그대로
 	 - useEffect쓰면 렌더링될때마다 되겠다 하고 inheritData를 useEffect로 상시 초기화하도록함 -> 순환 오류 발생
-	 - 찾아보니 useState는 "최초 렌더링" 할 때만 초기화하고 그 이후는 useEffect로 하기 때문에 `const initData = inheritData || {}; const [cellValues, setCellValues] = useState(initData)`대신 `const [cellValues, setCellValues] = useState(inheritData || {});`로 조정하고 useEffect 내에서 다시 setCellValues를 호출하는것으로 변경
+	 - 찾아보니 useState는 "최초 렌더링" 할 때만 초기화하고 그 이후는 useEffect로 하기 때문에 useEffect 초기화 시점으로 로 조정하고 useEffect 내에서 다시 setCellValues를 호출하는것으로 변경
 	 - SheetPage에서 데이터가 없을 때 tc는 inheritData를 null로, confirm때는 inheritData를 false로 하도록 하여 inheritData의 변경점을 설정함(어차피 inheritData가 null이면 무조건 사용자가 confirm을 해야 새 시트가 나오게 되어있음)
+	 - TabValue의 useState 초기화시점에서 loadData 실행하도록 해서 해결함(loadData가 useEffect로 묶이면 loadData에서 또다른 useState값들을 건드리는바람에 useEffect를 사용시 오류가 발생해서 이렇게 하는것으로)
+ - tab change에서 발견된 문제 처리
+	 - sheet의 데이터가 로딩되기 전에 tab change를 하게 되는것을 반복하면 시트의 inheritData를 로딩하는중에 tabChange가 되어 다른 탭에 데이터가 덮여쓰기됨
+	 - loading을 추가함 SheetPage에도 Sheets에도. 그런데 결국 저장되는 데이터는 Sheets에 있는 CellValues이기 때문에 SheetPage에 있는 loading은 제거함
+	 - 문제가 inheritData를 로딩하는중에 tabChange가 가능한것이기 때문에 로딩이 끝난 후(inheritData가 CellValues에 들어간 후) 로딩이 종료되도록 하고 로딩 중에 tabChange를 할 수 없도록 tab에 `disabled={loading}`을 설정함
+ - tab 변경 간 사라지지 않던 이전 탭 CellValues를 제거함

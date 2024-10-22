@@ -38,6 +38,7 @@ const icons = [
 
 const SheetPage = () => {
 
+  const [tabStopper, setTabStopper] = useState(false)
   const savedTabValue = localStorage.getItem('selectedTab');
   const [openDialog, setOpenDialog] = useState(false);
   const [openSnack, setOpenSnack] = useState(false);
@@ -105,6 +106,10 @@ const SheetPage = () => {
     setOpenSnack(true);
   }
 
+  const loadingStopper = () => {
+    setTabStopper(false);
+  }
+
   // 로컬에 데이터저장하기
   const saveDataToLocalStorage = (num, size, dataFromSheet) => {
     const data = [size, dataFromSheet];
@@ -132,8 +137,11 @@ const SheetPage = () => {
 
   // Tab
   const handleTabChange = (event, newValue) => {
-    if (confirmSize)
+    setTabStopper(true);
+    if (confirmSize) {
       saveDataToLocalStorage(tabValue, confirmSize, getSheetData());
+      sheetRef.current.delPrevValues();
+    }
     setTabValue(newValue);
     localStorage.setItem('selectedTab', newValue);
     loadTabData(newValue);
@@ -160,7 +168,18 @@ const SheetPage = () => {
               },
             }}>
             {icons.map((icon, index) => (
-              <Tab key={index} icon={icon} label={`File ${index + 1}`} />
+              <Tab
+                key={index}
+                icon={icon}
+                label={`File ${index + 1}`}
+                disabled={tabStopper}
+                sx={{
+                  '&.Mui-disabled': {
+                    opacity: 1,
+                    color: 'white'
+                  }
+                }}
+              />
             ))}
           </Tabs>
         </Toolbar>
@@ -199,7 +218,7 @@ const SheetPage = () => {
         ref={sheetRef}
         size={confirmSize}
         toolbarHeight={toolbarHeight}
-        saveData={saveDataToLocalStorage}
+        loader={loadingStopper}
         inheritData={inheritData} />
     </div>
   );

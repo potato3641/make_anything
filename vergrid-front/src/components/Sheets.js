@@ -3,10 +3,14 @@ import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
-// import Skeleton from '@mui/material/Skeleton';
+import Skeleton from '@mui/material/Skeleton';
+import LinearProgress from '@mui/material/LinearProgress';
 import './Sheets.css';
 
-const Sheets = forwardRef(({ size, toolbarHeight, saveData, inheritData }, ref) => {
+const DEBUG_FLAG = true;
+const __DEBUG = (msg) => DEBUG_FLAG ? console.log(msg) : msg;
+
+const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) => {
   const sizeOfSheet = size;
   const gridIndex = [];
   const maximumsize = 1000;
@@ -16,6 +20,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, saveData, inheritData }, ref) 
     }
   }
 
+  const [loading, setLoading] = useState(true);
   const [refMode, setRefMode] = useState(false); // Flag of Reference Mode
   const [cellValues, setCellValues] = useState(inheritData || {}); // Sheet Live Value
   const [focusTarget, setFocusTarget] = useState(null); // TextField Fouce Target Key
@@ -28,11 +33,22 @@ const Sheets = forwardRef(({ size, toolbarHeight, saveData, inheritData }, ref) 
     getCellValues() {
       return cellValues;
     },
+    delPrevValues() {
+      setCellValues({});
+    }
   }));
 
   useEffect(() => {
-    setCellValues(inheritData || {});
+    setLoading(true);
+    setCellValues(() => inheritData || {});
   }, [inheritData]);
+
+  useEffect(() => {
+    if (cellValues) {
+      loader();
+      setLoading(false);
+    }
+  }, [cellValues, loader]);
 
   // 셀 더블클릭 이벤트 핸들러
   const handlerDoubleClickCell = (i, j) => {
@@ -44,15 +60,20 @@ const Sheets = forwardRef(({ size, toolbarHeight, saveData, inheritData }, ref) 
 
   // 셀 클릭 이벤트 핸들러
   const handlerClickCell = (i, j) => {
+    const key = `$${i}$${j}`
+    if (touchTarget === key) { // touch한 셀 클릭 시 편집모드
+      openTextEditor(key);
+      return;
+    }
     if (refMode) {
-      // console.log(isReferenceOkay(focusTargetRef.current[focusTarget]?.value))
+      // __DEBUG(isReferenceOkay(focusTargetRef.current[focusTarget]?.value))
       if (isReferenceOkay(focusTargetRef.current[focusTarget]?.value)) {
         referenceMode(i, j);
         return;
       }
     }
     exitTextEditor();
-    setTouchTarget(`$${i}$${j}`);
+    setTouchTarget(key);
   }
 
   // 셀 데이터(Value) 업데이트
@@ -74,10 +95,10 @@ const Sheets = forwardRef(({ size, toolbarHeight, saveData, inheritData }, ref) 
     // active HTMlTextField를 클릭떄 확인시켜야함
     // 레퍼런스모드에서 처리해야하나?
     // 클릭모드에서 해야한다 왜냐하면 클릭할때만 발생하는 문제이기때문
-    // console.log(`focus target : ${key}`)
-    // console.log(`html value ${focusTargetRef.current[key]?.value}`)
-    // console.log(`cell values in open editor : ${cellValues[key]}`)
-    // console.log(`reference checker : ${isReferenceOkay(cellValues[key])}`)
+    // __DEBUG(`focus target : ${key}`)
+    // __DEBUG(`html value ${focusTargetRef.current[key]?.value}`)
+    // __DEBUG(`cell values in open editor : ${cellValues[key]}`)
+    // __DEBUG(`reference checker : ${isReferenceOkay(cellValues[key])}`)
     setRefMode(isReferenceOkay(cellValues[key]));
   }
 
@@ -88,24 +109,16 @@ const Sheets = forwardRef(({ size, toolbarHeight, saveData, inheritData }, ref) 
   const isReferenceOkay = (val) => { // 사칙연산도 추가해야함ㅠ
     if (val === undefined)
       return false;
-    // console.log(`checker inside : ${val}`)
-    const target = findLastRef(val);
-    if (val === "=" || target === "=")
+    if (val === "=")
       return true;
-    const lastRef = findLastMatchIndex(target);
-    const strAfterRef = target.substring(lastRef?.index);
-    // console.log(`checker inside target : ${target}`)
-    // console.log(`checker inside lastRef val : ${lastRef?.value}`)
-    // console.log(`checker inside lastRef idx : ${lastRef?.index}`)
-    // console.log(`checker inside lastRef ttl : ${lastRef?.total}`)
-    // console.log(`checker inside valAfterRef : ${strAfterRef}`)
-    // console.log(`checker option 1 : ${val?.startsWith("=")}`)
-    // console.log(`checker option 2 : ${strAfterRef === (lastRef?.value + '+')}`)
-    // console.log(`checker option 3 : ${strAfterRef === (lastRef?.value + '-')}`)
-    // console.log(`checker option 4 : ${strAfterRef === (lastRef?.value + '*')}`)
-    // console.log(`checker option 5 : ${strAfterRef === (lastRef?.value + '/')}`)
-    // console.log(`checker option 6 : ${strAfterRef === lastRef?.value}`)
-    // console.log(`DEBUG : ${lastRef?.value + '+'}`)
+    const lastRef = findLastMatchIndex(val);
+    const strAfterRef = val.substring(lastRef?.index);
+    // __DEBUG(`checker inside val : ${val}`)
+    // __DEBUG(`checker inside lastRef val : ${lastRef?.value}`)
+    // __DEBUG(`checker inside lastRef idx : ${lastRef?.index}`)
+    // __DEBUG(`checker inside lastRef ttl : ${lastRef?.total}`)
+    // __DEBUG(`checker inside valAfterRef : ${strAfterRef}`)
+    // __DEBUG(`checker option 1 : ${val?.startsWith("=")}`)
     const result = (val && // 정상값인지
       val.startsWith("=") && ( // 수식모드인지
         val.charAt(val.length - 1) === '(' || // 수식 괄호 전개중인지
@@ -147,7 +160,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, saveData, inheritData }, ref) 
     // 대상 없는 시트 전체 이벤트 핸들러(시트 컴포넌트 한정)
     // 시트 이벤트 핸들러는 touchTarget이 무조건 존재함
     if (event.key === '`') { // DEBUG : 로그찍기용
-      console.log(cellValues)
+      __DEBUG(cellValues)
     }
     if (!layer && !(touchTarget === null)) {
       const regex = /\$([0-9]+)\$([0-9]+)/;
@@ -234,7 +247,12 @@ const Sheets = forwardRef(({ size, toolbarHeight, saveData, inheritData }, ref) 
   // 셀 계산
   // 현행 : 문자열은 단순 +로 합침 / 계산식 괄호없음 << 완
   // 과도기 : 문자열 &로 합침 / 계산식 괄호추가 << 완
-  // 완성 : 문자열 &로 합치는 대신 문자는 ""로 감싸기 << 대기중
+  // 완성 : 문자열 &로 합치는 대신 문자는 ""로 감싸기 << 안할란다 이건(엑셀에서 귀찮았던거니까)
+  // 추가1 : 배열계산
+  // 추가2 : IF(A,B,C) 커스텀
+  // 추가3 : SUM(A) ~ SUM(A:B) 커스텀
+  // 추가4 : COUNT(A) ~ COUNT(A:B) 커스텀
+  // 추가5 : AND OR NOT 커스텀
   const calFormula = (formula, funcall = 0) => {
     if (!formula?.startsWith("="))
       return formula;
@@ -307,36 +325,44 @@ const Sheets = forwardRef(({ size, toolbarHeight, saveData, inheritData }, ref) 
   return (
     <div className='sheet-body' onKeyDown={(event) => handlerKeyDown(event, false)} style={{ height: `calc(100vh - ${toolbarHeight}px)`, overflow: 'auto' }}>
       <Grid className='grid-container' container spacing={0}>
-        {gridIndex.map(({ i, j }) => (
-          <Grid className={'grid-item' + (touchTarget === `$${i}$${j}` ? ' cell-focused' : '')} item xs={12 / sizeOfSheet} key={`$${i}$${j}`}>
-            {focusTarget === `$${i}$${j}` ? (
-              <TextField
-                onBlur={(event) => handlerUnfoucedTarget(i, j, event)}
-                onChange={(event) => handlerTextChange(i, j, event)}
-                onKeyDown={(event) => handlerKeyDown(event)}
-                onFocus={(event) => moveFocusTargetCursor(event)}
-                inputRef={(e) => (focusTargetRef.current[`$${i}$${j}`] = e)}
-                defaultValue={focusTargetValue}
-                className='cell-body'
-                slotProps={{
-                  htmlInput: {
-                    maxLength: 255,
-                  },
-                }}
-                variant="outlined" multiline fullWidth autoFocus />
-            ) : (
-              <Tooltip title={`${i}-${j}`} >
-                <Button
-                  onDoubleClick={() => handlerDoubleClickCell(i, j)}
-                  onClick={() => handlerClickCell(i, j)}
-                  className='cell-cover'
-                  variant="text">
-                  {calFormula(cellValues[`$${i}$${j}`]) || ''}
-                </Button>
-              </Tooltip>
-            )}
-          </Grid>
-        ))}
+        {!loading ? (
+          gridIndex.map(({ i, j }) => (
+            <Grid className={'grid-item' + (touchTarget === `$${i}$${j}` ? ' cell-focused' : '')} item xs={12 / sizeOfSheet} key={`$${i}$${j}`}>
+              {focusTarget === `$${i}$${j}` ? (
+                <TextField
+                  onBlur={(event) => handlerUnfoucedTarget(i, j, event)}
+                  onChange={(event) => handlerTextChange(i, j, event)}
+                  onKeyDown={(event) => handlerKeyDown(event)}
+                  onFocus={(event) => moveFocusTargetCursor(event)}
+                  inputRef={(e) => (focusTargetRef.current[`$${i}$${j}`] = e)}
+                  defaultValue={focusTargetValue}
+                  className='cell-body'
+                  slotProps={{
+                    htmlInput: {
+                      maxLength: 255,
+                    },
+                  }}
+                  variant="outlined" multiline fullWidth autoFocus />
+              ) : (
+                <Tooltip title={`${i}-${j}`} >
+                  <Button
+                    onDoubleClick={() => handlerDoubleClickCell(i, j)}
+                    onClick={() => handlerClickCell(i, j)}
+                    className='cell-cover'
+                    variant="text">
+                    {calFormula(cellValues[`$${i}$${j}`]) || ''}
+                  </Button>
+                </Tooltip>
+              )}
+            </Grid>
+          ))
+        ) : (
+          <div>
+            <Skeleton variant='rectangular' animation="wave" width="100%" height="100vh" />
+            <LinearProgress />
+          </div>
+        )
+        }
       </Grid>
     </div >
   );

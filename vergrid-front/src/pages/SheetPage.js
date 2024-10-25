@@ -110,7 +110,9 @@ const SheetPage = () => {
     setTabStopper(false);
   }
 
-  // 로컬에 데이터저장하기
+  /**
+   * 로컬에 데이터저장하기
+   */
   const saveDataToLocalStorage = (num, size, dataFromSheet) => {
     const data = [size, dataFromSheet];
     localStorage.setItem(`sheetData${num}`, JSON.stringify(data));
@@ -118,7 +120,9 @@ const SheetPage = () => {
     // console.log(data);
   }
 
-  // 시트에서 데이터 갖고오기
+  /**
+   * 현재 활성화된 시트에서 데이터 갖고오기
+   */
   const getSheetData = () => {
     if (sheetRef.current) {
       return sheetRef.current.getCellValues();

@@ -50,7 +50,9 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     }
   }, [cellValues, loader]);
 
-  // 셀 더블클릭 이벤트 핸들러
+  /**
+   * 셀 더블클릭 이벤트 핸들러
+   */
   const handlerDoubleClickCell = (i, j) => {
     if (!refMode) {
       const key = `$${i}$${j}`;
@@ -58,7 +60,9 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     }
   };
 
-  // 셀 클릭 이벤트 핸들러
+  /**
+   * 셀 클릭 이벤트 핸들러
+   */
   const handlerClickCell = (i, j) => {
     const key = `$${i}$${j}`
     if (touchTarget === key) { // touch한 셀 클릭 시 편집모드
@@ -76,7 +80,9 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     setTouchTarget(key);
   }
 
-  // 셀 데이터(Value) 업데이트
+  /**
+   * 셀 데이터(Value) 업데이트
+   */
   const updateCellData = (key, value) => {
     setCellValues({
       ...cellValues,
@@ -84,7 +90,9 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     });
   };
 
-  // 셀 편집모드 열기 (FocusTarget의 TextField 초기화)
+  /**
+   * 셀 편집모드 열기 (FocusTarget의 TextField 초기화)
+   */
   const openTextEditor = (key) => {
     setTouchTarget(null);
     setFocusTarget(key);
@@ -102,10 +110,13 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     setRefMode(isReferenceOkay(cellValues[key]));
   }
 
-  // 레퍼런스모드 on/off 체크
+
   // 여기에 글꼴변경모드 넣는게 맞다
   // 종료시점은? exitTextEditor실행시에 하게하면됨
   // 폐기됨. 사유 : html에 넣으면 적용이 아니라 span이 그대로 나옴 ㅋㅋ;
+  /**
+   * 레퍼런스모드 on/off 체크
+   */
   const isReferenceOkay = (val) => { // 사칙연산도 추가해야함ㅠ
     if (val === undefined)
       return false;
@@ -131,7 +142,9 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     return result
   }
 
-  // 셀 편집모드 닫기 (FocusTarget의 TextField 데이터 저장)
+  /** 
+   * 셀 편집모드 닫기 (FocusTarget의 TextField 데이터 저장)
+   */
   const exitTextEditor = (key = focusTarget, value = inputRef.current) => {
     setFocusTarget(null);
     setFocusTargetValue(undefined);
@@ -139,19 +152,25 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     setRefMode(false);
   }
 
-  // 포커싱된 셀의 커서 위치 제어
+  /**
+   * 포커싱된 셀의 커서 위치 제어
+   */
   const moveFocusTargetCursor = (event) => {
     const length = inputRef.current.length;
     event.target.setSelectionRange(length, length);
   }
 
-  // 셀 언포커싱 이벤트 핸들러
+  /** 
+   * 셀 언포커싱 이벤트 핸들러
+   */
   const handlerUnfoucedTarget = (i, j, event) => {
     if (refMode) return;
     exitTextEditor(focusTarget)
   };
 
-  // 셀 키 입력 이벤트 핸들러
+  /** 
+   * 셀 키 입력 이벤트 핸들러
+   */
   const handlerKeyDown = (event, layer = true) => {
     // 단일 타겟(ex - TextField)의 이벤트 핸들러
     if (layer && event.key === 'Enter') {
@@ -188,7 +207,9 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     }
   };
 
-  // 셀 텍스트 입력 제어 (플래그 제어용)
+  /**
+   * 셀 텍스트 입력 제어 (플래그 제어용)
+   */
   const handlerTextChange = (i, j, event) => {
     const value = event.target.value;
     if (!refMode && value.startsWith("="))
@@ -199,7 +220,9 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     inputRef.current = event.target.value;
   };
 
-  // 셀 주소 획득 모드
+  /**
+   * 레퍼런스 모드일때 값과 객체, html에 터치된 레퍼런스를 뒤에 붙여넣기함
+   */
   const referenceMode = (i, j) => {
     if (!refMode) return;
     /* 진입 조건 정리
@@ -218,6 +241,9 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     focusTargetRef.current[focusTarget].focus();
   };
 
+  /**
+   * 레퍼런스를 지우고 반환한다. 레퍼런스가 없다면 원본 반환
+   */
   const findLastRef = (target) => {
     const regex = /\$([0-9]+)\$([0-9]+)/g;
     const lastRef = findLastMatchIndex(target, regex);
@@ -228,6 +254,9 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     return target
   }
 
+  /**
+   * 마지막으로 매칭된 레퍼런스값의 정보를 반환한다
+   */
   const findLastMatchIndex = (str, regex = /\$([0-9]+)\$([0-9]+)/g) => {
     let matchArray = [...str.matchAll(regex)];
 
@@ -242,29 +271,138 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     return null;  // 매칭이 없을 때
   };
 
-  const isNumeric = (value) => !isNaN(value) && !isNaN(parseFloat(value)); // 문자판별함수
+  /**
+   * 문자판별함수 문자면 true
+   */
+  const isNumeric = (value) => !isNaN(value) && !isNaN(parseFloat(value));
 
-  // 셀 계산
+  /**
+   * 정규식문자의 문자열화 처리 (앞에 \붙여준다는 뜻)
+   */
+  const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  /**
+   * 셀 주소 A, B를 받아 둘을 포함한 둘 사이의 주소를 배열로 반환하는 함수
+   */
+  const arrayReference = (refA, refB) => {
+    const regex = /\$([0-9]+)\$([0-9]+)/g;
+    const keyA = refA.match(regex);
+    const keyB = refB.match(regex);
+    const i_S = keyA[0] > keyA[1] ? keyA[1] : keyA[0];
+    const i_E = keyA[0] < keyA[1] ? keyA[1] : keyA[0];
+    const j_S = keyB[0] > keyB[1] ? keyB[1] : keyB[0];
+    const j_E = keyB[0] < keyB[1] ? keyB[1] : keyB[0];
+    let stack = [];
+    for (let i = i_S; i <= i_E; i++)
+      for (let j = j_S; j <= j_E; j++)
+        stack.push(`$${i}$${j}`);
+    return stack;
+  }
+
   // 현행 : 문자열은 단순 +로 합침 / 계산식 괄호없음 << 완
   // 과도기 : 문자열 &로 합침 / 계산식 괄호추가 << 완
   // 완성 : 문자열 &로 합치는 대신 문자는 ""로 감싸기 << 안할란다 이건(엑셀에서 귀찮았던거니까)
-  // 추가1 : 배열계산
-  // 추가2 : IF(A,B,C) 커스텀
+  // 이하 우선순위에 대한 정렬임
+  // 추가1 : 배열계산 << 일단은 필요가 없을듯 / 아니 필요하다 배열계산부터해야한다
+  // 추가5 : AND OR NOT 커스텀 << 완
+  // 추가2 : IF(A,B,C) 커스텀 << 완
   // 추가3 : SUM(A) ~ SUM(A:B) 커스텀
   // 추가4 : COUNT(A) ~ COUNT(A:B) 커스텀
-  // 추가5 : AND OR NOT 커스텀
+  // 추가0 : 레퍼런스 계산
+  /**
+   * 셀 계산
+   */
   const calFormula = (formula, funcall = 0) => {
     if (!formula?.startsWith("="))
       return formula;
     if (funcall > maximumsize)
       throw new Error(`순환 참조 오류 발생 ${funcall}번째 호출`);
     const target = formula.slice(1);
+    let replacedTarget = target;
+    let numericFlag = true; // 문자판별기
+    // 함수레퍼런스 계산
+    const regexFunction = /\b(AND|OR|NOT|IF|SUM|COUNT)\b/;
+    if (regexFunction.test(target)) {
+      // AND(A) OR(A) 계산
+      const keys = [...target.matchAll(/(AND|OR)\(([^)]+)\)/g)];
+      const matches = target.match(/(AND|OR)\([^)]+\)/g);
+      let idx = 0;
+      keys.forEach((match) => {
+        const key = match[1];
+        const value = match[1].match(/\$([0-9]+)\$([0-9]+)/g) ? calFormula(cellValues[key], funcall + 1) : key;
+        replacedTarget = replacedTarget.replace(
+          new RegExp(escapeRegExp(matches[idx++]), "g"),
+          !(!value) ? 1 : 0);
+      });
+      // NOT(A) 계산
+      const keysNot = [...target.matchAll(/NOT\(([^)]+)\)/g)];
+      const matchesNot = target.match(/NOT\([^)]+\)/g);
+      idx = 0;
+      keysNot.forEach((match) => {
+        const key = match[1];
+        const value = match[1].match(/\$([0-9]+)\$([0-9]+)/g) ? calFormula(cellValues[key], funcall + 1) : key;
+        replacedTarget = replacedTarget.replace(
+          new RegExp(escapeRegExp(matchesNot[idx++]), "g"),
+          !value ? 1 : 0);
+      });
+      // AND(A:B) 계산
+      const keysArrAnd = [...target.matchAll(/AND\(([^:]+):([^)]+)\)/g)];
+      const matchesArrAnd = target.match(/AND\([^:]+:[^)]+\)/g);
+      idx = 0;
+      keysArrAnd.forEach((match) => {
+        let result = true;
+        const keys = arrayReference(match[1], match[2]);
+        for (const key of keys) {
+          const value = calFormula(cellValues[key], funcall + 1);
+          result &= value;
+        }
+        replacedTarget = replacedTarget.replace(
+          new RegExp(escapeRegExp(matchesArrAnd[idx++]), "g"),
+          result ? 1 : 0);
+      });
+      // OR(A:B) 계산
+      const keysArrOr = [...target.matchAll(/OR\(([^:]+):([^)]+)\)/g)];
+      const matchesArrOr = target.match(/OR\([^:]+:[^)]+\)/g);
+      idx = 0;
+      keysArrOr.forEach((match) => {
+        let result = false;
+        const keys = arrayReference(match[1], match[2]);
+        for (const key of keys) {
+          const value = calFormula(cellValues[key], funcall + 1);
+          result |= value;
+        }
+        replacedTarget = replacedTarget.replace(
+          new RegExp(escapeRegExp(matchesArrOr[idx++]), "g"),
+          result ? 1 : 0);
+      });
+      // IF(A,B,C) 계산
+      const keysArrIf = [...target.matchAll(/IF\(([^,]+),([^,]+),([^)]+)\)/g)];
+      const matchesArrIf = target.match(/IF\([^,]+,[^,]+,[^)]+\)/g);
+      idx = 0;
+      keysArrIf.forEach((match) => {
+        replacedTarget = replacedTarget.replace(
+          new RegExp(escapeRegExp(matchesArrIf[idx++]), "g"),
+          !(!calFormula(match[1], funcall + 1)) ? match[2] : match[3])
+      });
+      // SUM(A) 계산
+      const keysSum = [...target.matchAll(/SUM\(([^)]+)\)/g)];
+      const matchesSum = target.match(/SUM\([^)]+\)/g);
+      idx = 0;
+      keysSum.forEach((match) => {
+        const key = match[1];
+        const value = match[1].match(/\$([0-9]+)\$([0-9]+)/g) ? calFormula(cellValues[key], funcall + 1) : key;
+        replacedTarget = replacedTarget.replace(
+          new RegExp(escapeRegExp(matchesSum[idx++]), "g"),
+          value);
+      });
+    }
+
+    // 단일레퍼런스 계산
     const regex = /\$([0-9]+)\$([0-9]+)/g; // $n$n을 모두(g) 검색
     const keys = [...new Set(target.matchAll(regex))]; // 검색결과 정리
-    let replacedTarget = target;
     let combineTarget = target.replaceAll('&', '');
-    let numericFlag = true; // 문자판별기
 
+    // 단일레퍼런스 치환
     keys.forEach((match) => {
       const key = `$${match[1]}$${match[2]}`;
       const numValue = calFormula(cellValues[key], funcall + 1) || 0;

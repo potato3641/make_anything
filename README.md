@@ -143,4 +143,8 @@
 	 - loading을 추가함 SheetPage에도 Sheets에도. 그런데 결국 저장되는 데이터는 Sheets에 있는 CellValues이기 때문에 SheetPage에 있는 loading은 제거함
 	 - 문제가 inheritData를 로딩하는중에 tabChange가 가능한것이기 때문에 로딩이 끝난 후(inheritData가 CellValues에 들어간 후) 로딩이 종료되도록 하고 로딩 중에 tabChange를 할 수 없도록 tab에 `disabled={loading}`을 설정함
  - tab 변경 간 사라지지 않던 이전 탭 CellValues를 제거함
+<<<<<<< HEAD
 >>>>>>> fb2fa14 ([PAPER] dev noted)
+=======
+ - 정규식 작성중. 다른 방법은 많지만 정규식으로 하고싶음. 고집인가? 그래도 도전~
+>>>>>>> d923d5e ([PAPER] dev noted)

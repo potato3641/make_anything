@@ -103,3 +103,7 @@
 	 - 문제가 inheritData를 로딩하는중에 tabChange가 가능한것이기 때문에 로딩이 끝난 후(inheritData가 CellValues에 들어간 후) 로딩이 종료되도록 하고 로딩 중에 tabChange를 할 수 없도록 tab에 `disabled={loading}`을 설정함
  - tab 변경 간 사라지지 않던 이전 탭 CellValues를 제거함
  - 정규식 작성중. 다른 방법은 많지만 정규식으로 하고싶음. 고집인가? 그래도 도전~
+	 - 완료. calFormula에서 함수 계산 부분을 따로 빼서 정규식 도배된부분을 calSheetFunction과 calCellFunction로 분리
+	 - calSheetFunction은 `함수`를 찾고 반영시킴
+	 - calCellFunction은 찾은 `함수`부분을 받아서 함수를 직접적으로 계산함
+	 - IF 조건부분 완성해야함

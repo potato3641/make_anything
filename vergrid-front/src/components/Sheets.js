@@ -9,6 +9,22 @@ import './Sheets.css';
 
 const DEBUG_FLAG = true;
 const __DEBUG = (msg) => DEBUG_FLAG ? console.log(msg) : msg;
+const __REGEX = /\$([0-9]+)\$([0-9]+)/g;
+// 왜 linter disable 했냐면 함수식에 (, )가 들어가는걸 이해 못해서 자꾸 오류발생시킴
+/* eslint-disable */
+const __REGEX_FUNCTION = {
+  AND: /^AND\((?:\w+\([^\)]*\)|\w+|\$\d+\$\d+)(?:,(?:\w+\([^\)]*\)|\w+|\$\d+\$\d+))*\)$/g,
+  OR: /^OR\((?:\w+\([^\)]*\)|\w+|\$\d+\$\d+)(?:,(?:\w+\([^\)]*\)|\w+|\$\d+\$\d+))*\)$/g,
+  NOT: /NOT\([^)]+\)/g,
+  IF: /IF\([^,]+,[^,]+,[^)]+\)/g,
+  SUM: /^SUM\((?:\w+\([^\)]*\)|\w+|\$\d+\$\d+)(?:,(?:\w+\([^\)]*\)|\w+|\$\d+\$\d+))*\)$/g,
+  COUNTA: /^COUNTA\((?:\w+\([^\)]*\)|\w+|\$\d+\$\d+)(?:,(?:\w+\([^\)]*\)|\w+|\$\d+\$\d+))*\)$/g,
+  ARR_AND: /AND\([^:]+:[^)]+\)/g,
+  ARR_OR: /OR\([^:]+:[^)]+\)/g,
+  ARR_SUM: /SUM\([^:]+:[^)]+\)/g,
+  ARR_COUNTA: /COUNTA\([^:]+:[^)]+\)/g,
+}
+/* eslint-enable */
 
 const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) => {
   const sizeOfSheet = size;
@@ -245,7 +261,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
    * 레퍼런스를 지우고 반환한다. 레퍼런스가 없다면 원본 반환
    */
   const findLastRef = (target) => {
-    const regex = /\$([0-9]+)\$([0-9]+)/g;
+    const regex = __REGEX;
     const lastRef = findLastMatchIndex(target, regex);
     if (target && lastRef) {
       if (target.substring(lastRef.index) === lastRef.value)
@@ -257,7 +273,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
   /**
    * 마지막으로 매칭된 레퍼런스값의 정보를 반환한다
    */
-  const findLastMatchIndex = (str, regex = /\$([0-9]+)\$([0-9]+)/g) => {
+  const findLastMatchIndex = (str, regex = __REGEX) => {
     let matchArray = [...str.matchAll(regex)];
 
     if (matchArray.length > 0) {
@@ -279,13 +295,13 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
   /**
    * 정규식문자의 문자열화 처리 (앞에 \붙여준다는 뜻)
    */
-  const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const escapeRegExp = (str) => new RegExp(str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "g");
 
   /**
    * 셀 주소 A, B를 받아 둘을 포함한 둘 사이의 주소를 배열로 반환하는 함수
    */
   const arrayReference = (refA, refB) => {
-    const regex = /\$([0-9]+)\$([0-9]+)/g;
+    const regex = __REGEX;
     const keyA = refA.match(regex);
     const keyB = refB.match(regex);
     const i_S = keyA[0] > keyA[1] ? keyA[1] : keyA[0];
@@ -299,6 +315,110 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     return stack;
   }
 
+  /**
+   * 셀 함수 계산 (전체)
+   */
+  const calSheetFunction = (targetFunction, replacedTarget, funcall) => {
+    const __AND_INIT = (val) => !(!val);
+    const __AND_CAL = (val, next) => val & next;
+    const __AND_RST = (val) => !(!val);
+    const __OR_INIT = (val) => !(!val);
+    const __OR_CAL = (val, next) => val | next;
+    const __OR_RST = (val) => !(!val);
+    const __NOT_INIT = (val) => val;
+    const __NOT_CAL = (val, next) => val;
+    const __NOT_RST = (val) => !val;
+    const __SUM_INIT = (val) => val;
+    const __SUM_CAL = (val, next) => val + next;
+    const __SUM_RST = (val) => val;
+    const __IF_INIT = (val) => val;
+    const __IF_CAL = (val, next) => val;
+    const __IF_RST = (val, valTrue, valFalse) => val ? valTrue : valFalse;
+    const __COUNTA_INIT = (val) => 1;
+    const __COUNTA_CAL = (val, next) => val++;
+    const __COUNTA_RST = (val) => val;
+
+    let explorer = null;
+
+    explorer = targetFunction.match(__REGEX_FUNCTION.ARR_COUNTA);
+    if (explorer) // COUNTA:
+      explorer.forEach((target) => replacedTarget = calCellFunction(target, replacedTarget, 'ARR_COUNTA', __COUNTA_INIT, __COUNTA_CAL, __COUNTA_RST, funcall));
+
+    explorer = targetFunction.match(__REGEX_FUNCTION.COUNTA);
+    if (explorer) // COUNTA
+      explorer.forEach((target) => replacedTarget = calCellFunction(target, replacedTarget, 'COUNTA', __COUNTA_INIT, __COUNTA_CAL, __COUNTA_RST, funcall));
+
+    explorer = targetFunction.match(__REGEX_FUNCTION.ARR_AND);
+    if (explorer) // AND:
+      explorer.forEach((target) => replacedTarget = calCellFunction(target, replacedTarget, 'ARR_AND', __AND_INIT, __AND_CAL, __AND_RST, funcall));
+
+    explorer = targetFunction.match(__REGEX_FUNCTION.ARR_OR);
+    if (explorer) // OR:
+      explorer.forEach((target) => replacedTarget = calCellFunction(target, replacedTarget, 'ARR_OR', __OR_INIT, __OR_CAL, __OR_RST, funcall));
+
+    explorer = targetFunction.match(__REGEX_FUNCTION.AND);
+    if (explorer) // AND
+      explorer.forEach((target) => replacedTarget = calCellFunction(target, replacedTarget, 'AND', __AND_INIT, __AND_CAL, __AND_RST, funcall));
+
+    explorer = targetFunction.match(__REGEX_FUNCTION.OR);
+    if (explorer) // OR
+      explorer.forEach((target) => replacedTarget = calCellFunction(target, replacedTarget, 'OR', __OR_INIT, __OR_CAL, __OR_RST, funcall));
+
+    explorer = targetFunction.match(__REGEX_FUNCTION.NOT);
+    if (explorer) // NOT
+      explorer.forEach((target) => replacedTarget = calCellFunction(target, replacedTarget, 'NOT', __NOT_INIT, __NOT_CAL, __NOT_RST, funcall));
+
+    explorer = targetFunction.match(__REGEX_FUNCTION.IF);
+    if (explorer) // IF
+      explorer.forEach((target) => replacedTarget = calCellFunction(target, replacedTarget, 'IF', __IF_INIT, __IF_CAL, __IF_RST, funcall));
+
+    explorer = targetFunction.match(__REGEX_FUNCTION.ARR_SUM);
+    if (explorer) // SUM:
+      explorer.forEach((target) => replacedTarget = calCellFunction(target, replacedTarget, 'ARR_SUM', __SUM_INIT, __SUM_CAL, __SUM_RST, funcall));
+
+    explorer = targetFunction.match(__REGEX_FUNCTION.SUM);
+    if (explorer) // SUM
+      explorer.forEach((target) => replacedTarget = calCellFunction(target, replacedTarget, 'SUM', __SUM_INIT, __SUM_CAL, __SUM_RST, funcall));
+
+    return replacedTarget;
+  }
+
+  /**
+   * 셀 함수 계산 (단일)
+   */
+  const calCellFunction = (target, replacedTarget, name, init, cal, rst, funcall) => {
+    const arrayChecker = /\bARR\b/;
+    const ifChecker = /\bIF\b/;
+    const arr_flag = !(!arrayChecker.test(name));
+    const if_flag = ifChecker.test(name);
+    // 왜 linter disable 했냐면 함수식에 (, )가 들어가는걸 이해 못해서 자꾸 오류발생시킴
+    /* eslint-disable */
+    const pre_inside = () => {
+      if (arr_flag)
+        return target.match(new RegExp(`${name}\(([^:]+):([^)]+)\)`));
+      if (if_flag)
+        return target.match(new RegExp(`${name}\(([^,]+),([^,]+),([^)]+)\)`));
+      return target.match(new RegExp(`${name}\((.*)\)$`));
+    }
+    /* eslint-enable */
+    const inside = pre_inside();
+    const pre_parts = () => {
+      if (arr_flag)
+        return arrayReference(inside[1], inside[2]);
+      if (if_flag)
+        return [calFormula(inside[1], funcall + 1), calFormula(inside[2], funcall + 1), calFormula(inside[3], funcall + 1)]
+      return inside[1].match(/(\w+\([^()]*\)|\$\d+\$\d+|\w+)/g);
+    }
+    const parts = pre_parts();
+    let value = init(parts[0].match(__REGEX) ? calFormula(cellValues[parts[0]], funcall + 1) : parts[0]);
+    for (const part of parts)
+      value = if_flag ? value : cal(value, part.match(__REGEX) ? calFormula(cellValues[part], funcall + 1) : part);
+    replacedTarget = replacedTarget.replace(
+      escapeRegExp(target),
+      if_flag ? rst(value, parts[1], parts[2]) : rst(value));
+    return replacedTarget
+  }
+
   // 현행 : 문자열은 단순 +로 합침 / 계산식 괄호없음 << 완
   // 과도기 : 문자열 &로 합침 / 계산식 괄호추가 << 완
   // 완성 : 문자열 &로 합치는 대신 문자는 ""로 감싸기 << 안할란다 이건(엑셀에서 귀찮았던거니까)
@@ -306,9 +426,10 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
   // 추가1 : 배열계산 << 일단은 필요가 없을듯 / 아니 필요하다 배열계산부터해야한다
   // 추가5 : AND OR NOT 커스텀 << 완
   // 추가2 : IF(A,B,C) 커스텀 << 완
-  // 추가3 : SUM(A) ~ SUM(A:B) 커스텀
-  // 추가4 : COUNT(A) ~ COUNT(A:B) 커스텀
-  // 추가0 : 레퍼런스 계산
+  // 추가3 : SUM(A) ~ SUM(A:B) 커스텀 << 완
+  // 추가4 : COUNTA(A) ~ COUNTA(A:B) 커스텀 << 완
+  // 추가0 : 레퍼런스 계산 << 완
+  // 기타 : 조건식 IF절에서 ==,<,>,!= 뭐 이런거 해야함 및 발견되는 오류 수정
   /**
    * 셀 계산
    */
@@ -321,84 +442,22 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     let replacedTarget = target;
     let numericFlag = true; // 문자판별기
     // 함수레퍼런스 계산
-    const regexFunction = /\b(AND|OR|NOT|IF|SUM|COUNT)\b/;
-    if (regexFunction.test(target)) {
-      // AND(A) OR(A) 계산
-      const keys = [...target.matchAll(/(AND|OR)\(([^)]+)\)/g)];
-      const matches = target.match(/(AND|OR)\([^)]+\)/g);
-      let idx = 0;
-      keys.forEach((match) => {
-        const key = match[1];
-        const value = match[1].match(/\$([0-9]+)\$([0-9]+)/g) ? calFormula(cellValues[key], funcall + 1) : key;
-        replacedTarget = replacedTarget.replace(
-          new RegExp(escapeRegExp(matches[idx++]), "g"),
-          !(!value) ? 1 : 0);
-      });
-      // NOT(A) 계산
-      const keysNot = [...target.matchAll(/NOT\(([^)]+)\)/g)];
-      const matchesNot = target.match(/NOT\([^)]+\)/g);
-      idx = 0;
-      keysNot.forEach((match) => {
-        const key = match[1];
-        const value = match[1].match(/\$([0-9]+)\$([0-9]+)/g) ? calFormula(cellValues[key], funcall + 1) : key;
-        replacedTarget = replacedTarget.replace(
-          new RegExp(escapeRegExp(matchesNot[idx++]), "g"),
-          !value ? 1 : 0);
-      });
-      // AND(A:B) 계산
-      const keysArrAnd = [...target.matchAll(/AND\(([^:]+):([^)]+)\)/g)];
-      const matchesArrAnd = target.match(/AND\([^:]+:[^)]+\)/g);
-      idx = 0;
-      keysArrAnd.forEach((match) => {
-        let result = true;
-        const keys = arrayReference(match[1], match[2]);
-        for (const key of keys) {
-          const value = calFormula(cellValues[key], funcall + 1);
-          result &= value;
-        }
-        replacedTarget = replacedTarget.replace(
-          new RegExp(escapeRegExp(matchesArrAnd[idx++]), "g"),
-          result ? 1 : 0);
-      });
-      // OR(A:B) 계산
-      const keysArrOr = [...target.matchAll(/OR\(([^:]+):([^)]+)\)/g)];
-      const matchesArrOr = target.match(/OR\([^:]+:[^)]+\)/g);
-      idx = 0;
-      keysArrOr.forEach((match) => {
-        let result = false;
-        const keys = arrayReference(match[1], match[2]);
-        for (const key of keys) {
-          const value = calFormula(cellValues[key], funcall + 1);
-          result |= value;
-        }
-        replacedTarget = replacedTarget.replace(
-          new RegExp(escapeRegExp(matchesArrOr[idx++]), "g"),
-          result ? 1 : 0);
-      });
+    const regexFunction = /\b(AND|OR|NOT|IF|SUM|COUNTA)\b/;
+    if (regexFunction.test(replacedTarget)) {
+      replacedTarget = calSheetFunction(replacedTarget, replacedTarget, funcall);
       // IF(A,B,C) 계산
       const keysArrIf = [...target.matchAll(/IF\(([^,]+),([^,]+),([^)]+)\)/g)];
       const matchesArrIf = target.match(/IF\([^,]+,[^,]+,[^)]+\)/g);
-      idx = 0;
+      let idx = 0;
       keysArrIf.forEach((match) => {
         replacedTarget = replacedTarget.replace(
-          new RegExp(escapeRegExp(matchesArrIf[idx++]), "g"),
+          escapeRegExp(matchesArrIf[idx++]),
           !(!calFormula(match[1], funcall + 1)) ? match[2] : match[3])
-      });
-      // SUM(A) 계산
-      const keysSum = [...target.matchAll(/SUM\(([^)]+)\)/g)];
-      const matchesSum = target.match(/SUM\([^)]+\)/g);
-      idx = 0;
-      keysSum.forEach((match) => {
-        const key = match[1];
-        const value = match[1].match(/\$([0-9]+)\$([0-9]+)/g) ? calFormula(cellValues[key], funcall + 1) : key;
-        replacedTarget = replacedTarget.replace(
-          new RegExp(escapeRegExp(matchesSum[idx++]), "g"),
-          value);
       });
     }
 
     // 단일레퍼런스 계산
-    const regex = /\$([0-9]+)\$([0-9]+)/g; // $n$n을 모두(g) 검색
+    const regex = __REGEX; // $n$n을 모두(g) 검색
     const keys = [...new Set(target.matchAll(regex))]; // 검색결과 정리
     let combineTarget = target.replaceAll('&', '');
 

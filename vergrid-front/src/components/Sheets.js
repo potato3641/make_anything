@@ -23,6 +23,11 @@ const __REGEX_FUNCTION = {
   ARR_OR: /OR\([^:]+:[^)]+\)/g,
   ARR_SUM: /SUM\([^:]+:[^)]+\)/g,
   ARR_COUNTA: /COUNTA\([^:]+:[^)]+\)/g,
+  // 한글 매칭 안되는 문제로 \w+ -> [\w\u3131-\uD79D]+ 변경됨
+  // COMPARE_FIND: /(?:\w+\([^\)]*\)|\([^\)]*\)|\$\d+\$\d+|\w+)\s*(?:==|<|<=|>|>=|!==)\s*(?:\w+\([^\)]*\)|\([^\)]*\)|\$\d+\$\d+|\w+)/g
+  // COMPARE: /(\w+\([^\)]*\)|\([^\)]*\)|\$\d+\$\d+|\w+)\s*(==|<|<=|>|>=|!==)\s*(\w+\([^\)]*\)|\([^\)]*\)|\$\d+\$\d+|\w+)/
+  COMPARE_FIND: /(?:[\w\u3131-\uD79D]+\([^\)]*\)|\([^\)]*\)|\$\d+\$\d+|[\w\u3131-\uD79D]+)\s*(?:==|<|<=|>|>=|!==)\s*(?:[\w\u3131-\uD79D]+\([^\)]*\)|\([^\)]*\)|\$\d+\$\d+|[\w\u3131-\uD79D]+)/g,
+  COMPARE: /([\w\u3131-\uD79D]+\([^\)]*\)|\([^\)]*\)|\$\d+\$\d+|[\w\u3131-\uD79D]+)\s*(==|<|<=|>|>=|!==)\s*([\w\u3131-\uD79D]+\([^\)]*\)|\([^\)]*\)|\$\d+\$\d+|[\w\u3131-\uD79D]+)/,
 }
 /* eslint-enable */
 
@@ -153,6 +158,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
         val.charAt(val.length - 1) === '-' || // 수식 도중인지
         val.charAt(val.length - 1) === '*' || // 수식 도중인지
         val.charAt(val.length - 1) === '/' || // 수식 도중인지
+        val.charAt(val.length - 1) === ',' || // 수식 도중인지
         strAfterRef === lastRef?.value // 수식모드지만 아직 Ref가 없는지
       ));
     return result
@@ -397,7 +403,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
       if (arr_flag)
         return target.match(new RegExp(`${name}\(([^:]+):([^)]+)\)`));
       if (if_flag)
-        return target.match(new RegExp(`${name}\(([^,]+),([^,]+),([^)]+)\)`));
+        return target.match(new RegExp(`${name}\\(([^,]+),([^,]+),([^)]+)\\)`));
       return target.match(new RegExp(`${name}\((.*)\)$`));
     }
     /* eslint-enable */
@@ -410,13 +416,58 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
       return inside[1].match(/(\w+\([^()]*\)|\$\d+\$\d+|\w+)/g);
     }
     const parts = pre_parts();
-    let value = init(parts[0].match(__REGEX) ? calFormula(cellValues[parts[0]], funcall + 1) : parts[0]);
-    for (const part of parts)
-      value = if_flag ? value : cal(value, part.match(__REGEX) ? calFormula(cellValues[part], funcall + 1) : part);
+    // __DEBUG(target);
+    // __DEBUG(inside);
+    // __DEBUG(parts);
+
+    let value = parseFloat(init(parts[0].match(__REGEX) ? calFormula(cellValues[parts[0]], funcall + 1) : parts[0]));
+    if (!if_flag)
+      for (const part of parts)
+        value = parseFloat(cal(value, part.match(__REGEX) ? calFormula(cellValues[part], funcall + 1) : calFormula(part)));
     replacedTarget = replacedTarget.replace(
       escapeRegExp(target),
       if_flag ? rst(value, parts[1], parts[2]) : rst(value));
     return replacedTarget
+  }
+
+  /**
+   * 문자 포함 값 비교연산
+   */
+  const compareFormula = (left, compare, right, funcall) => {
+    let result;
+    left = left.match(__REGEX) ? calFormula(cellValues[left], funcall + 1) : left;
+    right = right.match(__REGEX) ? calFormula(cellValues[right], funcall + 1) : right;
+    const numLeft = parseFloat(left);
+    const numRight = parseFloat(left);
+    if (!(numLeft && numRight)) {
+      if (compare === "==")
+        return left === right ? '1' : '0' // 혹시 문제되면 다시 숫자로
+      if (compare === "!==")
+        return left !== right ? '1' : '0'
+    }
+    switch (compare) {
+      case "!==":
+        result = (numLeft !== numRight);
+        break;
+      case "<=":
+        result = (numLeft <= numRight);
+        break;
+      case ">=":
+        result = (numLeft >= numRight);
+        break;
+      case "==":
+        result = (numLeft === numRight);
+        break;
+      case "<":
+        result = (numLeft < numRight);
+        break;
+      case ">":
+        result = (numLeft > numRight);
+        break;
+      default:
+        throw new Error(`비교연산 오류 발생 ${funcall}번째 호출`)
+    }
+    return result ? 1 : 0;
   }
 
   // 현행 : 문자열은 단순 +로 합침 / 계산식 괄호없음 << 완
@@ -429,7 +480,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
   // 추가3 : SUM(A) ~ SUM(A:B) 커스텀 << 완
   // 추가4 : COUNTA(A) ~ COUNTA(A:B) 커스텀 << 완
   // 추가0 : 레퍼런스 계산 << 완
-  // 기타 : 조건식 IF절에서 ==,<,>,!= 뭐 이런거 해야함 및 발견되는 오류 수정
+  // 기타 : 조건식 IF절에서 ==,<,<=,>,>=,!== 뭐 이런거 해야함 및 발견되는 오류 수정
   /**
    * 셀 계산
    */
@@ -441,42 +492,51 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     const target = formula.slice(1);
     let replacedTarget = target;
     let numericFlag = true; // 문자판별기
+
+    // 비교연산 조건처리
+    const regexCompare = __REGEX_FUNCTION.COMPARE_FIND;
+    if (regexCompare.test(replacedTarget)) {
+      const matches = replacedTarget.match(__REGEX_FUNCTION.COMPARE_FIND);
+      matches.forEach(() => {
+        const match = replacedTarget.match(__REGEX_FUNCTION.COMPARE);
+        replacedTarget = replacedTarget.replace(
+          escapeRegExp(match[0]),
+          compareFormula(match[1], match[2], match[3], funcall + 1)
+        )
+      })
+    }
+    // __DEBUG(`after compare : ${replacedTarget}`);
     // 함수레퍼런스 계산
     const regexFunction = /\b(AND|OR|NOT|IF|SUM|COUNTA)\b/;
-    if (regexFunction.test(replacedTarget)) {
+    if (regexFunction.test(replacedTarget))
       replacedTarget = calSheetFunction(replacedTarget, replacedTarget, funcall);
-      // IF(A,B,C) 계산
-      const keysArrIf = [...target.matchAll(/IF\(([^,]+),([^,]+),([^)]+)\)/g)];
-      const matchesArrIf = target.match(/IF\([^,]+,[^,]+,[^)]+\)/g);
-      let idx = 0;
-      keysArrIf.forEach((match) => {
-        replacedTarget = replacedTarget.replace(
-          escapeRegExp(matchesArrIf[idx++]),
-          !(!calFormula(match[1], funcall + 1)) ? match[2] : match[3])
-      });
-    }
-
+    // if (regexFunction.test(replacedTarget))
+    //   throw new Error(`함수 오류 발생 ${funcall}번째 호출`);
+    // __DEBUG(`after func : ${replacedTarget}`);
     // 단일레퍼런스 계산
     const regex = __REGEX; // $n$n을 모두(g) 검색
     const keys = [...new Set(target.matchAll(regex))]; // 검색결과 정리
     let combineTarget = target.replaceAll('&', '');
-
-    // 단일레퍼런스 치환
     keys.forEach((match) => {
       const key = `$${match[1]}$${match[2]}`;
-      const numValue = calFormula(cellValues[key], funcall + 1) || 0;
+      const numValue = parseFloat(calFormula(cellValues[key], funcall + 1)) || 0;
       const strValue = calFormula(cellValues[key], funcall + 1) || '';
       numericFlag &= isNumeric(numValue); // 문자판별중
       replacedTarget = replacedTarget.replaceAll(key, numValue);
       combineTarget = combineTarget.replaceAll(key, strValue);
     });
-
+    // __DEBUG(`after ref : ${replacedTarget}`);
     if (!numericFlag) // 문자 감지됨 escape
       return combineTarget;
-
-    const parts = replacedTarget.split(/([()+\-*/])/).filter(Boolean); // 사칙연산분리 및 빈배열 처리
-    const result = calRecursiveBracket(parts);
-    return result;
+    // __DEBUG(`after str : ${replacedTarget}`);
+    // 단순 사칙연산 및 괄호처리
+    if (/([()+\-*/])/.test(replacedTarget)) {
+      const parts = replacedTarget.split(/([()+\-*/])/).filter(Boolean); // 사칙연산분리 및 빈배열 처리
+      const result = calRecursiveBracket(parts);
+      // __DEBUG(`after 연산 : ${replacedTarget}`);
+      return result;
+    }
+    return replacedTarget;
   }
 
   // 재귀적 괄호 처리
@@ -547,7 +607,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
                     onClick={() => handlerClickCell(i, j)}
                     className='cell-cover'
                     variant="text">
-                    {calFormula(cellValues[`$${i}$${j}`]) || ''}
+                    {calFormula(cellValues[`$${i}$${j}`]) ?? ''}
                   </Button>
                 </Tooltip>
               )}

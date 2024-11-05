@@ -10,6 +10,7 @@ import './Sheets.css';
 const DEBUG_FLAG = true;
 const __DEBUG = (msg) => DEBUG_FLAG ? console.log(msg) : msg;
 const __REGEX = /\$([0-9]+)\$([0-9]+)/g;
+const __REGEx = /\$([0-9]+)\$([0-9]+)/;
 // 왜 linter disable 했냐면 함수식에 (, )가 들어가는걸 이해 못해서 자꾸 오류발생시킴
 /* eslint-disable */
 const __REGEX_FUNCTION = {
@@ -28,6 +29,7 @@ const __REGEX_FUNCTION = {
   // COMPARE: /(\w+\([^\)]*\)|\([^\)]*\)|\$\d+\$\d+|\w+)\s*(==|<|<=|>|>=|!==)\s*(\w+\([^\)]*\)|\([^\)]*\)|\$\d+\$\d+|\w+)/
   COMPARE_FIND: /(?:[\w\u3131-\uD79D]+\([^\)]*\)|\([^\)]*\)|\$\d+\$\d+|[\w\u3131-\uD79D]+)\s*(?:==|<|<=|>|>=|!==)\s*(?:[\w\u3131-\uD79D]+\([^\)]*\)|\([^\)]*\)|\$\d+\$\d+|[\w\u3131-\uD79D]+)/g,
   COMPARE: /([\w\u3131-\uD79D]+\([^\)]*\)|\([^\)]*\)|\$\d+\$\d+|[\w\u3131-\uD79D]+)\s*(==|<|<=|>|>=|!==)\s*([\w\u3131-\uD79D]+\([^\)]*\)|\([^\)]*\)|\$\d+\$\d+|[\w\u3131-\uD79D]+)/,
+  FOUROP: /(\$\d+\$\d+|\d+)\s*([\*\/\+\-])\s*(\$\d+\$\d+|\d+)/,
 }
 /* eslint-enable */
 
@@ -41,7 +43,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     }
   }
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // sheet loading
   const [refMode, setRefMode] = useState(false); // Flag of Reference Mode
   const [cellValues, setCellValues] = useState(inheritData || {}); // Sheet Live Value
   const [focusTarget, setFocusTarget] = useState(null); // TextField Fouce Target Key
@@ -84,7 +86,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
   /**
    * 셀 클릭 이벤트 핸들러
    */
-  const handlerClickCell = (i, j) => {
+  const handlerClickCell = (event, i, j) => {
     const key = `$${i}$${j}`
     if (touchTarget === key) { // touch한 셀 클릭 시 편집모드
       openTextEditor(key);
@@ -158,7 +160,9 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
         val.charAt(val.length - 1) === '-' || // 수식 도중인지
         val.charAt(val.length - 1) === '*' || // 수식 도중인지
         val.charAt(val.length - 1) === '/' || // 수식 도중인지
-        val.charAt(val.length - 1) === ',' || // 수식 도중인지
+        val.charAt(val.length - 1) === ',' || // 함수 도중인지
+        val.slice(val.length - 2, val.length) === '==' || // 함수 도중인지
+        /^=.*\$\d+\$\d+:/.test(val) ||
         strAfterRef === lastRef?.value // 수식모드지만 아직 Ref가 없는지
       ));
     return result
@@ -307,13 +311,13 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
    * 셀 주소 A, B를 받아 둘을 포함한 둘 사이의 주소를 배열로 반환하는 함수
    */
   const arrayReference = (refA, refB) => {
-    const regex = __REGEX;
+    const regex = __REGEx;
     const keyA = refA.match(regex);
     const keyB = refB.match(regex);
-    const i_S = keyA[0] > keyA[1] ? keyA[1] : keyA[0];
-    const i_E = keyA[0] < keyA[1] ? keyA[1] : keyA[0];
-    const j_S = keyB[0] > keyB[1] ? keyB[1] : keyB[0];
-    const j_E = keyB[0] < keyB[1] ? keyB[1] : keyB[0];
+    const i_S = parseFloat(keyA[1]) > parseFloat(keyA[2]) ? parseFloat(keyA[2]) : parseFloat(keyA[1]);
+    const j_S = parseFloat(keyA[1]) < parseFloat(keyA[2]) ? parseFloat(keyA[2]) : parseFloat(keyA[1]);
+    const i_E = parseFloat(keyB[1]) > parseFloat(keyB[2]) ? parseFloat(keyB[2]) : parseFloat(keyB[1]);
+    const j_E = parseFloat(keyB[1]) < parseFloat(keyB[2]) ? parseFloat(keyB[2]) : parseFloat(keyB[1]);
     let stack = [];
     for (let i = i_S; i <= i_E; i++)
       for (let j = j_S; j <= j_E; j++)
@@ -334,8 +338,8 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     const __NOT_INIT = (val) => val;
     const __NOT_CAL = (val, next) => val;
     const __NOT_RST = (val) => !val;
-    const __SUM_INIT = (val) => val;
-    const __SUM_CAL = (val, next) => val + next;
+    const __SUM_INIT = (val) => 0;
+    const __SUM_CAL = (val, next) => parseFloat(val) + parseFloat(next);
     const __SUM_RST = (val) => val;
     const __IF_INIT = (val) => val;
     const __IF_CAL = (val, next) => val;
@@ -393,24 +397,28 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
    * 셀 함수 계산 (단일)
    */
   const calCellFunction = (target, replacedTarget, name, init, cal, rst, funcall) => {
-    const arrayChecker = /\bARR\b/;
-    const ifChecker = /\bIF\b/;
+    const arrayChecker = /ARR/;
+    const ifChecker = /IF/;
     const arr_flag = !(!arrayChecker.test(name));
     const if_flag = ifChecker.test(name);
     // 왜 linter disable 했냐면 함수식에 (, )가 들어가는걸 이해 못해서 자꾸 오류발생시킴
     /* eslint-disable */
+    const getNameForArr = /^.+_(.+)$/;
+    const match = name.match(getNameForArr);
+    if (match)
+      name = match[1];
     const pre_inside = () => {
       if (arr_flag)
-        return target.match(new RegExp(`${name}\(([^:]+):([^)]+)\)`));
+        return target.match(new RegExp(`${name}\\(([^:]+):([^)]+)\\)`));
       if (if_flag)
         return target.match(new RegExp(`${name}\\(([^,]+),([^,]+),([^)]+)\\)`));
-      return target.match(new RegExp(`${name}\((.*)\)$`));
+      return target.match(new RegExp(`${name}\\((.*)\\)$`));
     }
     /* eslint-enable */
     const inside = pre_inside();
     const pre_parts = () => {
       if (arr_flag)
-        return arrayReference(inside[1], inside[2]);
+        return [...arrayReference(inside[1], inside[2])];
       if (if_flag)
         return [calFormula(inside[1], funcall + 1), calFormula(inside[2], funcall + 1), calFormula(inside[3], funcall + 1)]
       return inside[1].match(/(\w+\([^()]*\)|\$\d+\$\d+|\w+)/g);
@@ -435,10 +443,10 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
    */
   const compareFormula = (left, compare, right, funcall) => {
     let result;
-    left = left.match(__REGEX) ? calFormula(cellValues[left], funcall + 1) : left;
-    right = right.match(__REGEX) ? calFormula(cellValues[right], funcall + 1) : right;
+    left = left.match(__REGEx) ? calFormula(cellValues[left], funcall + 1) : left;
+    right = right.match(__REGEx) ? calFormula(cellValues[right], funcall + 1) : right;
     const numLeft = parseFloat(left);
-    const numRight = parseFloat(left);
+    const numRight = parseFloat(right);
     if (!(numLeft && numRight)) {
       if (compare === "==")
         return left === right ? '1' : '0' // 혹시 문제되면 다시 숫자로
@@ -493,6 +501,38 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     let replacedTarget = target;
     let numericFlag = true; // 문자판별기
 
+    // 단순 사칙연산 선행처리
+    const regexFourop = __REGEX_FUNCTION.FOUROP;
+    while (regexFourop.test(replacedTarget)) {
+      const match = replacedTarget.match(__REGEX_FUNCTION.FOUROP);
+      if (!match)
+        break;
+      const left = parseFloat(match[1].match(__REGEx) ? calFormula(cellValues[match[1]], funcall + 1) : match[1]);
+      const right = parseFloat(match[3].match(__REGEx) ? calFormula(cellValues[match[3]], funcall + 1) : match[3]);
+      let result = 0;
+      switch (match[2]) {
+        case '+':
+          result = left + right;
+          break;
+        case '-':
+          result = left - right;
+          break;
+        case '*':
+          result = left * right;
+          break;
+        case '/':
+          result = left / right;
+          break;
+        default:
+          throw new Error(`선행 사칙연산 오류 발생 ${funcall}번째 호출`);
+      }
+      replacedTarget = replacedTarget.replace(
+        match[0],
+        result
+      )
+    }
+
+    // __DEBUG(`first : ${replacedTarget}`)
     // 비교연산 조건처리
     const regexCompare = __REGEX_FUNCTION.COMPARE_FIND;
     if (regexCompare.test(replacedTarget)) {
@@ -529,7 +569,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     if (!numericFlag) // 문자 감지됨 escape
       return combineTarget;
     // __DEBUG(`after str : ${replacedTarget}`);
-    // 단순 사칙연산 및 괄호처리
+    // 사칙연산 및 괄호처리
     if (/([()+\-*/])/.test(replacedTarget)) {
       const parts = replacedTarget.split(/([()+\-*/])/).filter(Boolean); // 사칙연산분리 및 빈배열 처리
       const result = calRecursiveBracket(parts);
@@ -576,7 +616,11 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
       }
     }
 
-    return stack.reduce((acc, val) => acc + val, 0);
+    let result = 0;
+    for (const val of stack) {
+      result += val;
+    }
+    return result;
   }
 
   return (
@@ -604,7 +648,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
                 <Tooltip title={`${i}-${j}`} >
                   <Button
                     onDoubleClick={() => handlerDoubleClickCell(i, j)}
-                    onClick={() => handlerClickCell(i, j)}
+                    onClick={(event) => handlerClickCell(event, i, j)}
                     className='cell-cover'
                     variant="text">
                     {calFormula(cellValues[`$${i}$${j}`]) ?? ''}

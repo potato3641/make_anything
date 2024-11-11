@@ -81,7 +81,7 @@ const SheetPage = () => {
     // 스크롤용 상단바 길이 계산
     if (toolbarRef.current) {
       const { height } = toolbarRef.current.getBoundingClientRect();
-      setToolbarHeight(height);
+      setToolbarHeight(height + 40);
     }
     // 이전 탭 확인도구
     const savedTabValue = localStorage.getItem('selectedTab');

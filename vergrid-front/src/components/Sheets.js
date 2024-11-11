@@ -5,12 +5,14 @@ import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Skeleton from '@mui/material/Skeleton';
 import LinearProgress from '@mui/material/LinearProgress';
+import CellMenu from './CellMenu';
 import './Sheets.css';
 
 const DEBUG_FLAG = true;
 const __DEBUG = (msg) => DEBUG_FLAG ? console.log(msg) : msg;
 const __REGEX = /\$([0-9]+)\$([0-9]+)/g;
 const __REGEx = /\$([0-9]+)\$([0-9]+)/;
+
 // 왜 linter disable 했냐면 함수식에 (, )가 들어가는걸 이해 못해서 자꾸 오류발생시킴
 /* eslint-disable */
 const __REGEX_FUNCTION = {
@@ -43,6 +45,9 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     }
   }
 
+  const [anchorEl, setAnchorEl] = useState(null); // Target of cell function
+  const [openMenu, setOpenMenu] = useState(false); // cell function Menu opener
+  const [idxMenu, setIdxMenu] = useState(0); // cell function Value
   const [loading, setLoading] = useState(true); // sheet loading
   const [refMode, setRefMode] = useState(false); // Flag of Reference Mode
   const [cellValues, setCellValues] = useState(inheritData || {}); // Sheet Live Value
@@ -101,6 +106,46 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     }
     exitTextEditor();
     setTouchTarget(key);
+  }
+
+  /**
+   * 셀 우클릭 이벤트 핸들러
+   */
+  const handlerRightClick = (event, i, j) => {
+    const key = `$${i}$${j}`
+    exitTextEditor();
+    setTouchTarget(key);
+    // open modal
+    handlerOpenMenu(event);
+  };
+
+  /**
+   * 우클릭 메뉴 오픈 이벤트 핸들러
+   */
+  const handlerOpenMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+    setOpenMenu(true);
+  }
+
+  /**
+   * 우클릭 메뉴 닫기 이벤트 핸들러
+   */
+  const handlerCloseMenu = () => {
+    setAnchorEl(null);
+    setOpenMenu(false);
+  };
+
+  /**
+   * 우클릭 메뉴 선택값 가져오는 이벤트 핸들러
+   * 0 : 잘라내기
+   * 1 : 복사하기
+   * 2 : 붙여넣기
+   * 3 : 지우기
+   * 4 : 서식
+   * 5 : 예약
+   */
+  const emitIdx = (idx) => {
+    setIdxMenu(idx);
   }
 
   /**
@@ -502,6 +547,8 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     let numericFlag = true; // 문자판별기
 
     // 단순 사칙연산 선행처리
+    // 조건연산 이전 조건사칙연산 수행을 위한 4종 연산 처리
+    // 근데 이거 연산 이후 (n)도 검토해야하지 않을까? ALERT
     const regexFourop = __REGEX_FUNCTION.FOUROP;
     while (regexFourop.test(replacedTarget)) {
       const match = replacedTarget.match(__REGEX_FUNCTION.FOUROP);
@@ -649,6 +696,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
                   <Button
                     onDoubleClick={() => handlerDoubleClickCell(i, j)}
                     onClick={(event) => handlerClickCell(event, i, j)}
+                    onContextMenu={(event) => handlerRightClick(event, i, j)}
                     className='cell-cover'
                     variant="text">
                     {calFormula(cellValues[`$${i}$${j}`]) ?? ''}
@@ -665,7 +713,9 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
         )
         }
       </Grid>
-    </div >
+      <CellMenu open={openMenu} anchorEl={anchorEl} emit={emitIdx} handlerClose={handlerCloseMenu} />
+
+    </div>
   );
 });
 

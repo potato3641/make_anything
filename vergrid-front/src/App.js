@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Base from './layouts/Base';
 import Examples from './components/Examples';
@@ -6,6 +6,11 @@ import SheetPage from './pages/SheetPage';
 import TestPage from './pages/TestPage';
 
 function App() {
+  useEffect(() => {
+    document.oncontextmenu = () => {
+      return false;
+    }
+  }, [])
   return (
     <Router>
       <Base>
@@ -16,7 +21,7 @@ function App() {
           <Route path="/test" element={<TestPage />} />
         </Routes>
       </Base>
-    </Router>
+    </Router >
   );
 }
 

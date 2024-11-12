@@ -6,6 +6,8 @@ import Tooltip from '@mui/material/Tooltip';
 import Skeleton from '@mui/material/Skeleton';
 import LinearProgress from '@mui/material/LinearProgress';
 import CellMenu from './CellMenu';
+import CellReserved from './CellReserved';
+import CheckField from './CheckField';
 import './Sheets.css';
 
 const DEBUG_FLAG = true;
@@ -35,7 +37,7 @@ const __REGEX_FUNCTION = {
 }
 /* eslint-enable */
 
-const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) => {
+const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSetting }, ref) => {
   const sizeOfSheet = size;
   const gridIndex = [];
   const maximumsize = 1000;
@@ -44,13 +46,15 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
       gridIndex.push({ i, j });
     }
   }
-
+  // out of sheet
   const [anchorEl, setAnchorEl] = useState(null); // Target of cell function
   const [openMenu, setOpenMenu] = useState(false); // cell function Menu opener
-  const [idxMenu, setIdxMenu] = useState(0); // cell function Value
+  const [openReserve, setOpenReserve] = useState(false); // cell function Reserve opener
+
   const [loading, setLoading] = useState(true); // sheet loading
   const [refMode, setRefMode] = useState(false); // Flag of Reference Mode
   const [cellValues, setCellValues] = useState(inheritData || {}); // Sheet Live Value
+  const [cellSettings, setCellSettings] = useState(inheritSetting || {}); // Sheet Live Setting
   const [focusTarget, setFocusTarget] = useState(null); // TextField Fouce Target Key
   const [touchTarget, setTouchTarget] = useState(null); // TextField Touch Target Key
   const [focusTargetValue, setFocusTargetValue] = useState(undefined); // TextField Live Value
@@ -63,20 +67,27 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     },
     delPrevValues() {
       setCellValues({});
-    }
+    },
+    getCellSettings() {
+      return cellSettings;
+    },
+    delPrevSettings() {
+      setCellSettings({});
+    },
   }));
 
   useEffect(() => {
     setLoading(true);
     setCellValues(() => inheritData || {});
-  }, [inheritData]);
+    setCellSettings(() => inheritSetting || {});
+  }, [inheritData, inheritSetting]);
 
   useEffect(() => {
-    if (cellValues) {
+    if (cellValues && cellSettings) {
       loader();
       setLoading(false);
     }
-  }, [cellValues, loader]);
+  }, [cellValues, cellSettings, loader]);
 
   /**
    * 셀 더블클릭 이벤트 핸들러
@@ -145,8 +156,64 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
    * 5 : 예약
    */
   const emitIdx = (idx) => {
-    setIdxMenu(idx);
+    switch (idx) {
+      case 0: // 잘라내기
+        break;
+      case 1: // 복사하기
+        break;
+      case 2: // 붙여넣기
+        break;
+      case 3: // 지우기
+        handlerTextRemove();
+        break;
+      case 4: // 서식
+        break;
+      case 5: // 예약
+        handlerOpenReserve();
+        break;
+      default:
+        throw new Error(`incorrect index error`);
+    }
   }
+
+  /**
+   * 우클릭 메뉴 - 예약 오픈 이벤트 핸들러
+   */
+  const handlerOpenReserve = () => {
+    setOpenReserve(true);
+  }
+
+  /**
+   * 우클릭 메뉴 - 예약 닫기 이벤트 핸들러
+   */
+  const handlerCloseReserve = () => {
+    setOpenReserve(false);
+  }
+
+  /**
+   * 우클릭 메뉴 - 예약 선택값 가져오는 이벤트 핸들러
+   */
+  const emitPeriodPerpose = (period, perpose) => {
+    const today = new Date();
+    const regex = __REGEx;
+    const match = touchTarget.match(regex);
+    const key = `$${match[1]}$${match[2]}`;
+    updateCellSetting(key, period, perpose, today);
+  }
+
+  /**
+   * 셀 세팅 업데이트
+   */
+  const updateCellSetting = (key, period, perpose, date) => {
+    setCellSettings({
+      ...cellSettings,
+      [key]: {
+        period: period,
+        perpose: perpose,
+        date: date,
+      }
+    });
+  };
 
   /**
    * 셀 데이터(Value) 업데이트
@@ -253,7 +320,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
       __DEBUG(cellValues)
     }
     if (!layer && !(touchTarget === null)) {
-      const regex = /\$([0-9]+)\$([0-9]+)/;
+      const regex = __REGEx;
       const match = touchTarget.match(regex);
       if (event.key === 'ArrowUp')
         setTouchTarget(`$${parseFloat(match[1]) ? parseFloat(match[1]) - 1 : 0}$${parseFloat(match[2])}`);
@@ -272,11 +339,20 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
           setRefMode(true);
       }
       if (event.key === 'Delete') {
-        const key = `$${match[1]}$${match[2]}`;
-        updateCellData(key, '');
+        handlerTextRemove();
       }
     }
   };
+
+  /** 
+   * 터치 셀 데이터 삭제
+   */
+  const handlerTextRemove = () => {
+    const regex = __REGEx;
+    const match = touchTarget.match(regex);
+    const key = `$${match[1]}$${match[2]}`;
+    updateCellData(key, '');
+  }
 
   /**
    * 셀 텍스트 입력 제어 (플래그 제어용)
@@ -670,6 +746,35 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
     return result;
   }
 
+  const preRenderContent = (i, j) => {
+    const key = `$${i}$${j}`;
+    switch (true) {
+      case CellReserved[key]?.perpose === 1: // CHECK
+        return <CheckField
+          onBlur={(event) => handlerUnfoucedTarget(i, j, event)}
+          onFocus={(event) => moveFocusTargetCursor(event)}
+          inputRef={(e) => (focusTargetRef.current[`$${i}$${j}`] = e)}
+        />
+      case CellReserved[key]?.perpose === 2: // COUNTER
+      case CellReserved[key]?.perpose === 3: // CHECK-COUNTER
+      default:
+        return <TextField
+          onBlur={(event) => handlerUnfoucedTarget(i, j, event)}
+          onChange={(event) => handlerTextChange(i, j, event)}
+          onKeyDown={(event) => handlerKeyDown(event)}
+          onFocus={(event) => moveFocusTargetCursor(event)}
+          inputRef={(e) => (focusTargetRef.current[`$${i}$${j}`] = e)}
+          defaultValue={focusTargetValue}
+          className='cell-body'
+          slotProps={{
+            htmlInput: {
+              maxLength: 255,
+            },
+          }}
+          variant="outlined" multiline fullWidth autoFocus />;
+    }
+  }
+
   return (
     <div className='sheet-body' onKeyDown={(event) => handlerKeyDown(event, false)} style={{ height: `calc(100vh - ${toolbarHeight}px)`, overflow: 'auto' }}>
       <Grid className='grid-container' container spacing={0}>
@@ -677,20 +782,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
           gridIndex.map(({ i, j }) => (
             <Grid className={'grid-item' + (touchTarget === `$${i}$${j}` ? ' cell-focused' : '')} item xs={12 / sizeOfSheet} key={`$${i}$${j}`}>
               {focusTarget === `$${i}$${j}` ? (
-                <TextField
-                  onBlur={(event) => handlerUnfoucedTarget(i, j, event)}
-                  onChange={(event) => handlerTextChange(i, j, event)}
-                  onKeyDown={(event) => handlerKeyDown(event)}
-                  onFocus={(event) => moveFocusTargetCursor(event)}
-                  inputRef={(e) => (focusTargetRef.current[`$${i}$${j}`] = e)}
-                  defaultValue={focusTargetValue}
-                  className='cell-body'
-                  slotProps={{
-                    htmlInput: {
-                      maxLength: 255,
-                    },
-                  }}
-                  variant="outlined" multiline fullWidth autoFocus />
+                preRenderContent(i, j)
               ) : (
                 <Tooltip title={`${i}-${j}`} >
                   <Button
@@ -714,7 +806,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData }, ref) =>
         }
       </Grid>
       <CellMenu open={openMenu} anchorEl={anchorEl} emit={emitIdx} handlerClose={handlerCloseMenu} />
-
+      <CellReserved open={openReserve} emit={emitPeriodPerpose} handlerClose={handlerCloseReserve} />
     </div>
   );
 });

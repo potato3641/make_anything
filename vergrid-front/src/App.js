@@ -4,6 +4,7 @@ import Base from './layouts/Base';
 import Examples from './components/Examples';
 import SheetPage from './pages/SheetPage';
 import TestPage from './pages/TestPage';
+import CheckField from './components/CheckField';
 
 function App() {
   useEffect(() => {
@@ -19,6 +20,7 @@ function App() {
           <Route path="/examples" element={<Examples />} />
           <Route path="/sheets" element={<SheetPage />} />
           <Route path="/test" element={<TestPage />} />
+          <Route path="/check" element={<CheckField />} />
         </Routes>
       </Base>
     </Router >

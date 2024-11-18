@@ -102,21 +102,22 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
   /**
    * 셀 클릭 이벤트 핸들러
    */
-  const handlerClickCell = (event, i, j) => {
-    const key = `$${i}$${j}`
-    if (touchTarget === key) { // touch한 셀 클릭 시 편집모드
-      openTextEditor(key);
-      return;
-    }
-    if (refMode) {
-      // __DEBUG(isReferenceOkay(focusTargetRef.current[focusTarget]?.value))
-      if (isReferenceOkay(focusTargetRef.current[focusTarget]?.value)) {
+  const handlerClickCell = (event, i, j, key = `$${i}$${j}`) => {
+    if (cellSettings[key] && cellSettings[key]?.perpose === 1) { // check?
+      if (refMode) {
         referenceMode(i, j);
-        return;
+      } else {
+        setTouchTarget(key);
       }
+    } else if (touchTarget === key) { // touch한 셀 클릭 시 편집모드
+      openTextEditor(key);
+    } else if (refMode && isReferenceOkay(focusTargetRef.current[focusTarget]?.value)) {
+      // __DEBUG(isReferenceOkay(focusTargetRef.current[focusTarget]?.value))
+      referenceMode(i, j);
+    } else {
+      exitTextEditor();
+      setTouchTarget(key);
     }
-    exitTextEditor();
-    setTouchTarget(key);
   }
 
   /**
@@ -205,24 +206,26 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
    * 셀 세팅 업데이트
    */
   const updateCellSetting = (key, period, perpose, date) => {
-    setCellSettings({
-      ...cellSettings,
-      [key]: {
-        period: period,
-        perpose: perpose,
-        date: date,
-      }
-    });
+    if (key)
+      setCellSettings({
+        ...cellSettings,
+        [key]: {
+          period: period,
+          perpose: perpose,
+          date: date,
+        }
+      });
   };
 
   /**
    * 셀 데이터(Value) 업데이트
    */
   const updateCellData = (key, value) => {
-    setCellValues({
-      ...cellValues,
-      [key]: value,
-    });
+    if (key)
+      setCellValues({
+        ...cellValues,
+        [key]: value,
+      });
   };
 
   /**
@@ -314,11 +317,14 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
     if (layer && event.key === 'Enter') {
       exitTextEditor(focusTarget);
     }
-    // 대상 없는 시트 전체 이벤트 핸들러(시트 컴포넌트 한정)
-    // 시트 이벤트 핸들러는 touchTarget이 무조건 존재함
+    //DEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUG
     if (event.key === '`') { // DEBUG : 로그찍기용
       __DEBUG(cellValues)
-    }
+      __DEBUG(cellSettings)
+      console.log(focusTargetRef.current)
+    } //DEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUG
+    // 대상 없는 시트 전체 이벤트 핸들러(시트 컴포넌트 한정)
+    // 시트 이벤트 핸들러는 touchTarget이 무조건 존재함
     if (!layer && !(touchTarget === null)) {
       const regex = __REGEx;
       const match = touchTarget.match(regex);
@@ -614,7 +620,9 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
    * 셀 계산
    */
   const calFormula = (formula, funcall = 0) => {
-    if (!formula?.startsWith("="))
+    if (!isNaN(formula)) // you are num
+      return formula
+    if (!formula?.startsWith("=")) // you are str
       return formula;
     if (funcall > maximumsize)
       throw new Error(`순환 참조 오류 발생 ${funcall}번째 호출`);
@@ -668,6 +676,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
         )
       })
     }
+
     // __DEBUG(`after compare : ${replacedTarget}`);
     // 함수레퍼런스 계산
     const regexFunction = /\b(AND|OR|NOT|IF|SUM|COUNTA)\b/;
@@ -675,6 +684,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
       replacedTarget = calSheetFunction(replacedTarget, replacedTarget, funcall);
     // if (regexFunction.test(replacedTarget))
     //   throw new Error(`함수 오류 발생 ${funcall}번째 호출`);
+
     // __DEBUG(`after func : ${replacedTarget}`);
     // 단일레퍼런스 계산
     const regex = __REGEX; // $n$n을 모두(g) 검색
@@ -688,9 +698,11 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
       replacedTarget = replacedTarget.replaceAll(key, numValue);
       combineTarget = combineTarget.replaceAll(key, strValue);
     });
+
     // __DEBUG(`after ref : ${replacedTarget}`);
     if (!numericFlag) // 문자 감지됨 escape
       return combineTarget;
+
     // __DEBUG(`after str : ${replacedTarget}`);
     // 사칙연산 및 괄호처리
     if (/([()+\-*/])/.test(replacedTarget)) {
@@ -748,30 +760,41 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
 
   const preRenderContent = (i, j) => {
     const key = `$${i}$${j}`;
-    switch (true) {
-      case CellReserved[key]?.perpose === 1: // CHECK
-        return <CheckField
-          onBlur={(event) => handlerUnfoucedTarget(i, j, event)}
-          onFocus={(event) => moveFocusTargetCursor(event)}
-          inputRef={(e) => (focusTargetRef.current[`$${i}$${j}`] = e)}
-        />
-      case CellReserved[key]?.perpose === 2: // COUNTER
-      case CellReserved[key]?.perpose === 3: // CHECK-COUNTER
+    switch (cellSettings[key]?.perpose) {
+      case 1: // CHECK
+        return {
+          type: "Check",
+          component:
+            <CheckField
+              onBlur={(event) => handlerUnfoucedTarget(i, j, event)}
+              toucher={handlerClickCell}
+              updater={updateCellData}
+              adr={[i, j]}
+              ref={(e) => (focusTargetRef.current[`$${i}$${j}`] = e)}
+            />
+        };
+      case 2: // COUNTER
+      case 3: // CHECK-COUNTER
       default:
-        return <TextField
-          onBlur={(event) => handlerUnfoucedTarget(i, j, event)}
-          onChange={(event) => handlerTextChange(i, j, event)}
-          onKeyDown={(event) => handlerKeyDown(event)}
-          onFocus={(event) => moveFocusTargetCursor(event)}
-          inputRef={(e) => (focusTargetRef.current[`$${i}$${j}`] = e)}
-          defaultValue={focusTargetValue}
-          className='cell-body'
-          slotProps={{
-            htmlInput: {
-              maxLength: 255,
-            },
-          }}
-          variant="outlined" multiline fullWidth autoFocus />;
+        return {
+          type: "Text",
+          component:
+            <TextField
+              onBlur={(event) => handlerUnfoucedTarget(i, j, event)}
+              onChange={(event) => handlerTextChange(i, j, event)}
+              onKeyDown={(event) => handlerKeyDown(event)}
+              onFocus={(event) => moveFocusTargetCursor(event)}
+              inputRef={(e) => (focusTargetRef.current[`$${i}$${j}`] = e)}
+              defaultValue={focusTargetValue}
+              className='cell-body'
+              slotProps={{
+                htmlInput: {
+                  maxLength: 255,
+                },
+              }}
+              variant="outlined" multiline fullWidth autoFocus
+            />
+        };
     }
   }
 
@@ -781,20 +804,27 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
         {!loading ? (
           gridIndex.map(({ i, j }) => (
             <Grid className={'grid-item' + (touchTarget === `$${i}$${j}` ? ' cell-focused' : '')} item xs={12 / sizeOfSheet} key={`$${i}$${j}`}>
-              {focusTarget === `$${i}$${j}` ? (
-                preRenderContent(i, j)
-              ) : (
-                <Tooltip title={`${i}-${j}`} >
-                  <Button
-                    onDoubleClick={() => handlerDoubleClickCell(i, j)}
-                    onClick={(event) => handlerClickCell(event, i, j)}
-                    onContextMenu={(event) => handlerRightClick(event, i, j)}
-                    className='cell-cover'
-                    variant="text">
-                    {calFormula(cellValues[`$${i}$${j}`]) ?? ''}
-                  </Button>
-                </Tooltip>
-              )}
+              {(() => {
+                const rendering = preRenderContent(i, j);
+                switch (rendering.type) {
+                  case "Check":
+                    return rendering.component;
+                  case "Text":
+                    return focusTarget === `$${i}$${j}` ? rendering.component :
+                      <Tooltip title={`${i}-${j}`} >
+                        <Button
+                          onDoubleClick={() => handlerDoubleClickCell(i, j)}
+                          onClick={(event) => handlerClickCell(event, i, j)}
+                          onContextMenu={(event) => handlerRightClick(event, i, j)}
+                          className='cell-cover'
+                          variant="text">
+                          {calFormula(cellValues[`$${i}$${j}`]) ?? ''}
+                        </Button>
+                      </Tooltip>
+                  default:
+                    return null;
+                }
+              })()}
             </Grid>
           ))
         ) : (

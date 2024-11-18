@@ -46,6 +46,7 @@ const SheetPage = () => {
   const [displaySize, setDisplaySize] = useState(sizeOfSheet);
   const [confirmSize, setConfirmSize] = useState(null);
   const [inheritData, setInheritData] = useState(false);
+  const [inheritSetting, setInheritSetting] = useState(false);
   const tempSize = useRef(sizeOfSheet);
   const toolbarRef = useRef(null);
   const [toolbarHeight, setToolbarHeight] = useState(0);
@@ -62,11 +63,13 @@ const SheetPage = () => {
   const loadTabData = (num) => {
     const loadData = loadDataFromLocalStorage(num);
     if (loadData && loadData[1]) {
-      const [size, data] = loadData;
+      const [size, data, setting] = loadData;
       setInheritData(data);
+      setInheritSetting(setting);
       setConfirmSize(size);
     } else {
       setInheritData(null);
+      setInheritSetting(null);
       setConfirmSize(null);
     }
   }
@@ -98,11 +101,12 @@ const SheetPage = () => {
     // console.log('confirmed from dialog')
     // console.log(inheritData)
     setInheritData(false);
+    setInheritSetting(false);
     setConfirmSize(sizeOfSheet);
     setOpenDialog(false);
   }
   const handleSnackClick = () => {
-    saveDataToLocalStorage(tabValue, sizeOfSheet, getSheetData());
+    saveDataToLocalStorage(tabValue, sizeOfSheet, getSheetData(), getSheetSetting());
     setOpenSnack(true);
   }
 
@@ -113,8 +117,8 @@ const SheetPage = () => {
   /**
    * 로컬에 데이터저장하기
    */
-  const saveDataToLocalStorage = (num, size, dataFromSheet) => {
-    const data = [size, dataFromSheet];
+  const saveDataToLocalStorage = (num, size, dataFromSheet, settingFromSheet) => {
+    const data = [size, dataFromSheet, settingFromSheet];
     localStorage.setItem(`sheetData${num}`, JSON.stringify(data));
     // console.log(`sheet ${num} saved`);
     // console.log(data);
@@ -126,6 +130,16 @@ const SheetPage = () => {
   const getSheetData = () => {
     if (sheetRef.current) {
       return sheetRef.current.getCellValues();
+    }
+    return {};
+  }
+
+  /**
+   * 현재 활성화된 시트에서 세팅 갖고오기
+   */
+  const getSheetSetting = () => {
+    if (sheetRef.current) {
+      return sheetRef.current.getCellSettings();
     }
     return {};
   }
@@ -143,8 +157,9 @@ const SheetPage = () => {
   const handleTabChange = (event, newValue) => {
     setTabStopper(true);
     if (confirmSize) {
-      saveDataToLocalStorage(tabValue, confirmSize, getSheetData());
+      saveDataToLocalStorage(tabValue, confirmSize, getSheetData(), getSheetSetting());
       sheetRef.current.delPrevValues();
+      sheetRef.current.delPrevSettings();
     }
     setTabValue(newValue);
     localStorage.setItem('selectedTab', newValue);
@@ -223,7 +238,8 @@ const SheetPage = () => {
         size={confirmSize}
         toolbarHeight={toolbarHeight}
         loader={loadingStopper}
-        inheritData={inheritData} />
+        inheritData={inheritData}
+        inheritSetting={inheritSetting} />
     </div>
   );
 };

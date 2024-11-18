@@ -1,23 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, forwardRef, useImperativeHandle } from 'react';
 import './CheckField.css';
 import { ToggleButton } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
+import { Check, Close } from '@mui/icons-material';
 
-const CheckField = ({ onBlur, onFocus, inputRef }) => {
+const CheckField = forwardRef(({ onBlur, toucher, updater, adr }, ref) => {
   const [selected, setSelected] = useState(false);
+  useImperativeHandle(ref, () => ({
+    value: selected ? 1 : 0,
+  }));
   return (
     <ToggleButton
       color="info"
-      value={selected}
+      value="check"
       selected={selected}
-      onChange={() => setSelected((val) => !val)}
+      onChange={() => setSelected((val) => { toucher(null, adr[0], adr[1]); updater(`$${adr[0]}$${adr[1]}`, !val + 0); return !val })}
       onBlur={onBlur}
-      onFoucs={onFocus}
-      inputRef={inputRef}
+      ref={ref}
+      sx={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
     >
-      <CheckIcon />
+      {selected ? (<Check />) : (<Close />)}
     </ToggleButton>
   );
-};
+});
 
 export default CheckField;

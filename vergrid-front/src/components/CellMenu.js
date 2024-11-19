@@ -1,23 +1,7 @@
 import React from 'react';
-import './CellMenu.css';
 import { Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
-import { ContentCut, ContentCopy, ContentPaste, Delete, Alarm, FormatColorFill } from '@mui/icons-material';
-const RIGHT_CLICK_OPTIONS = [
-  '잘라내기',
-  '복사하기',
-  '붙여넣기',
-  '지우기',
-  '서식',
-  '예약',
-];
-const RIGHT_CLICK_ICONS = [
-  <ContentCut fontSize="small" />,
-  <ContentCopy fontSize="small" />,
-  <ContentPaste fontSize="small" />,
-  <Delete fontSize="small" />,
-  <FormatColorFill fontSize="small" />,
-  <Alarm fontSize="small" />,
-]
+import { RIGHT_CLICK_OPTIONS, RIGHT_CLICK_ICONS } from '../const.js'
+import './CellMenu.css';
 
 const CellMenu = ({ open, anchorEl, emit, handlerClose }) => {
 

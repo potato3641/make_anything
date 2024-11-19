@@ -13,28 +13,9 @@ import SaveIcon from '@mui/icons-material/Save';
 import Snackbar from '@mui/material/Snackbar';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Filter1RoundedIcon from '@mui/icons-material/Filter1Rounded';
-import Filter2RoundedIcon from '@mui/icons-material/Filter2Rounded';
-import Filter3RoundedIcon from '@mui/icons-material/Filter3Rounded';
-import Filter4RoundedIcon from '@mui/icons-material/Filter4Rounded';
-import Filter5RoundedIcon from '@mui/icons-material/Filter5Rounded';
-import Filter6RoundedIcon from '@mui/icons-material/Filter6Rounded';
-import Filter7RoundedIcon from '@mui/icons-material/Filter7Rounded';
-import Filter8RoundedIcon from '@mui/icons-material/Filter8Rounded';
-import Filter9RoundedIcon from '@mui/icons-material/Filter9Rounded';
 import Sheets from '../components/Sheets'
-
-const icons = [
-  <Filter1RoundedIcon />,
-  <Filter2RoundedIcon />,
-  <Filter3RoundedIcon />,
-  <Filter4RoundedIcon />,
-  <Filter5RoundedIcon />,
-  <Filter6RoundedIcon />,
-  <Filter7RoundedIcon />,
-  <Filter8RoundedIcon />,
-  <Filter9RoundedIcon />,
-]
+import { icons } from '../const.js'
+import './SheetPage.css'
 
 const SheetPage = () => {
 

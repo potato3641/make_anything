@@ -8,7 +8,8 @@ import LinearProgress from '@mui/material/LinearProgress';
 import CellMenu from './CellMenu';
 import CellReserved from './CellReserved';
 import CheckField from './CheckField';
-import CounterField from './CounterField.js';
+import CounterField from './CounterField';
+import CheckListField from './CheckListField';
 import { __REGEX, __REGEx, __REGEX_FUNCTION, COLORBG_TEXT, COLORFT_TEXT } from '../const.js'
 import './Sheets.css';
 
@@ -82,7 +83,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
    * 셀 클릭 이벤트 핸들러
    */
   const handlerClickCell = (event, i, j, key = `$${i}$${j}`) => {
-    if (cellSettings[key] && (cellSettings[key]?.perpose === 1 || cellSettings[key]?.perpose === 2)) { // check?
+    if (cellSettings[key] && [1, 2, 3].includes(cellSettings[key]?.perpose)) { // check?
       if (refMode) {
         referenceMode(i, j);
       } else {
@@ -132,7 +133,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
    * 1 : 복사하기
    * 2 : 붙여넣기
    * 3 : 지우기
-   * 4 : 예약
+   * 4 : 설정
    */
   const emitIdx = (idx) => {
     switch (idx) {
@@ -162,6 +163,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
       perpose: cellSettings[touchTarget]?.perpose,
       colorbg: cellSettings[touchTarget]?.colorbg,
       colorft: cellSettings[touchTarget]?.colorft,
+      value: cellSettings[touchTarget]?.value,
     });
     setOpenReserve(true);
   }
@@ -176,18 +178,18 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
   /**
    * 우클릭 메뉴 - 예약 선택값 가져오는 이벤트 핸들러
    */
-  const emitPeriodPerpose = (period, perpose, colorbg, colorft) => {
+  const emitPeriodPerpose = (period, perpose, colorbg, colorft, value = 'check') => {
     const today = new Date();
     const regex = __REGEx;
     const match = touchTarget.match(regex);
     const key = `$${match[1]}$${match[2]}`;
-    updateCellSetting(key, period, perpose, colorbg, colorft, today);
+    updateCellSetting(key, period, perpose, colorbg, colorft, value, today);
   }
 
   /**
    * 셀 세팅 업데이트
    */
-  const updateCellSetting = (key, period, perpose, colorbg, colorft, date) => {
+  const updateCellSetting = (key, period, perpose, colorbg, colorft, value = 'check', date) => {
     if (key)
       setCellSettings({
         ...cellSettings,
@@ -196,6 +198,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
           perpose: perpose,
           colorbg: colorbg,
           colorft: colorft,
+          value: value,
           date: date,
         }
       });
@@ -777,6 +780,21 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
             />
         };
       case 3: // CHECK-COUNTER
+        return {
+          type: "CheckList",
+          component:
+            <CheckListField
+              onBlur={(event) => handlerUnfoucedTarget(i, j, event)}
+              toucher={handlerClickCell}
+              updater={updateCellData}
+              onRightClick={(event) => handlerRightClick(event, i, j)}
+              clrft={cellSettings[key]?.colorft}
+              clrbg={cellSettings[key]?.colorbg}
+              val={cellSettings[key]?.value}
+              adr={[i, j]}
+              ref={(e) => (focusTargetRef.current[`$${i}$${j}`] = e)}
+            />
+        };
       default:
         return {
           type: "Text",
@@ -827,6 +845,8 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
                   case "Check":
                     return rendering.component;
                   case "Counter":
+                    return rendering.component;
+                  case "CheckList":
                     return rendering.component;
                   case "Text":
                     return focusTarget === `$${i}$${j}` ? rendering.component :

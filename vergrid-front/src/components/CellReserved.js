@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Box, Fade, Backdrop } from '@mui/material';
+import React, { useState, useEffect, useRef } from 'react';
+import { Modal, Box, Fade, Backdrop, TextField } from '@mui/material';
 import { ToggleButton, ToggleButtonGroup, Button } from '@mui/material';
 import { PERIOD_TEXT, PERPOSE_TEXT, COLORBG_TEXT, COLORFT_TEXT } from '../const.js'
 import './CellReserved.css';
@@ -7,17 +7,20 @@ import './CellReserved.css';
 const CellReserved = ({ open, emit, handlerClose, initData }) => {
 
   const [alignPeriod, setAlignPeriod] = useState(initData?.period || PERIOD_TEXT[0]);
-  const [alignPerpose, setAlignPerpose] = useState(initData?.perpose || PERIOD_TEXT[0]);
+  const [alignPerpose, setAlignPerpose] = useState(initData?.perpose || PERPOSE_TEXT[0]);
   const [alignColorBG, setAlignColorBG] = useState(initData?.colorbg || COLORBG_TEXT[0]);
   const [alignColorFT, setAlignColorFT] = useState(initData?.colorft || COLORFT_TEXT[0]);
+  const [alignValue, setAlignValue] = useState(initData?.value || 'check');
   const [pageBG, setPageBG] = useState(0);
   const [pageFT, setPageFT] = useState(0);
+  const message = useRef('');
 
   useEffect(() => {
     setAlignPeriod(() => PERIOD_TEXT[initData?.period] || PERIOD_TEXT[0]);
     setAlignPerpose(() => PERPOSE_TEXT[initData?.perpose] || PERPOSE_TEXT[0]);
     setAlignColorBG(() => COLORBG_TEXT[initData?.colorbg] || COLORBG_TEXT[0]);
     setAlignColorFT(() => COLORFT_TEXT[initData?.colorft] || COLORFT_TEXT[0]);
+    setAlignValue(() => initData?.value || 'check')
     setPageBG(Math.floor((initData?.colorbg || 0) / 6));
     setPageFT(Math.floor((initData?.colorft || 0) / 6));
   }, [initData]);
@@ -57,9 +60,10 @@ const CellReserved = ({ open, emit, handlerClose, initData }) => {
     const perpose = PERPOSE_TEXT.indexOf(alignPerpose);
     const colorbg = COLORBG_TEXT.indexOf(alignColorBG);
     const colorft = COLORFT_TEXT.indexOf(alignColorFT);
+    const value = message.current?.value;
     if (period === -1 || perpose === -1 || colorbg === -1 || colorft === -1)
       return;
-    emit(period, perpose, colorbg, colorft);
+    emit(period, perpose, colorbg, colorft, value);
     handlerClose();
   }
 
@@ -200,6 +204,25 @@ const CellReserved = ({ open, emit, handlerClose, initData }) => {
               </ToggleButton>
             </ToggleButtonGroup>
           </Box>
+          {(alignPerpose === 'CheckList') &&
+            <Box
+              sx={{
+                m: 1,
+              }}>
+              <TextField
+                className='cell-body'
+                slotProps={{
+                  htmlInput: {
+                    maxLength: 255,
+                  },
+                }}
+                defaultValue={alignValue}
+                inputRef={message}
+                label="Content"
+                variant="outlined" multiline fullWidth autoFocus
+              />
+            </Box>
+          }
           <Box
             sx={{
               m: 1

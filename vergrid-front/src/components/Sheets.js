@@ -8,6 +8,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import CellMenu from './CellMenu';
 import CellReserved from './CellReserved';
 import CheckField from './CheckField';
+import CounterField from './CounterField.js';
 import { __REGEX, __REGEx, __REGEX_FUNCTION, COLORBG_TEXT, COLORFT_TEXT } from '../const.js'
 import './Sheets.css';
 
@@ -81,7 +82,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
    * 셀 클릭 이벤트 핸들러
    */
   const handlerClickCell = (event, i, j, key = `$${i}$${j}`) => {
-    if (cellSettings[key] && cellSettings[key]?.perpose === 1) { // check?
+    if (cellSettings[key] && (cellSettings[key]?.perpose === 1 || cellSettings[key]?.perpose === 2)) { // check?
       if (refMode) {
         referenceMode(i, j);
       } else {
@@ -761,6 +762,20 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
             />
         };
       case 2: // COUNTER
+        return {
+          type: "Counter",
+          component:
+            <CounterField
+              onBlur={(event) => handlerUnfoucedTarget(i, j, event)}
+              toucher={handlerClickCell}
+              updater={updateCellData}
+              onRightClick={(event) => handlerRightClick(event, i, j)}
+              clrft={cellSettings[key]?.colorft}
+              clrbg={cellSettings[key]?.colorbg}
+              adr={[i, j]}
+              ref={(e) => (focusTargetRef.current[`$${i}$${j}`] = e)}
+            />
+        };
       case 3: // CHECK-COUNTER
       default:
         return {
@@ -810,6 +825,8 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
                 const rendering = preRenderContent(i, j);
                 switch (rendering.type) {
                   case "Check":
+                    return rendering.component;
+                  case "Counter":
                     return rendering.component;
                   case "Text":
                     return focusTarget === `$${i}$${j}` ? rendering.component :

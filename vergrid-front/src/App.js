@@ -16,7 +16,7 @@ function App() {
     <Router>
       <Base>
         <Routes>
-          <Route path="/" element={<Navigate to="/examples" replace />} />
+          <Route path="/" element={<Navigate to="/sheets" replace />} />
           <Route path="/examples" element={<Examples />} />
           <Route path="/sheets" element={<SheetPage />} />
           <Route path="/test" element={<TestPage />} />

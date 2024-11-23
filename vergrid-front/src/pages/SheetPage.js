@@ -7,7 +7,6 @@ import Fab from '@mui/material/Fab';
 import Slider from '@mui/material/Slider';
 import Typography from '@mui/material/Typography';
 import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 import Snackbar from '@mui/material/Snackbar';
@@ -16,6 +15,7 @@ import Tab from '@mui/material/Tab';
 import Sheets from '../components/Sheets'
 import { icons } from '../const.js'
 import './SheetPage.css'
+import { DialogContent } from '@mui/material';
 
 const SheetPage = () => {
 
@@ -184,17 +184,21 @@ const SheetPage = () => {
           </Tabs>
         </Toolbar>
       </AppBar>
-      <Dialog open={openDialog} onClose={handleDialogClose} maxWidth={false}>
+      <Dialog sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'stretch',
+        textAlign: 'center',
+        overflow: 'hidden',
+      }}
+        open={openDialog}
+        onClose={handleDialogClose}
+        maxWidth={false}
+      >
         <DialogTitle>size of sheet</DialogTitle>
-        <DialogActions
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'stretch',
-            textAlign: 'center',
-            overflow: 'hidden',
-          }}>
-          <Typography variant='h4'>{displaySize} x {displaySize}</Typography>
+
+        <DialogContent sx={{ p: 1, overflow: 'hidden' }}>
+          <Typography gutterBottom variant='h4'>{displaySize} x {displaySize}</Typography>
           <Slider
             value={tempSize.current}
             onChange={handleSliderChange}
@@ -205,8 +209,8 @@ const SheetPage = () => {
               width: '90%',
             }}
             aria-label="Default" />
-          <Button onClick={handlerDialogConfirm}>confirm</Button>
-        </DialogActions>
+        </DialogContent>
+        <Button autoFocus onClick={handlerDialogConfirm}>confirm</Button>
       </Dialog>
       <Snackbar
         open={openSnack}

@@ -43,6 +43,7 @@ export const PERPOSE_TEXT = [
   'Text',
   'Check',
   'Counter',
+  'Check-Counter',
 ]
 export const COLORBG_TEXT = [
   'WHITE',

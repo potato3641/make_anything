@@ -43,7 +43,13 @@ export const PERPOSE_TEXT = [
   'Text',
   'Check',
   'Counter',
-  'Check-Counter',
+  'CheckList',
+]
+export const PERPOSE_TOOLTIP = [
+  '(default) 텍스트 입력',
+  '0, 1값을 가진 체크',
+  '0부터 1씩 증가하는 카운터',
+  '',
 ]
 export const COLORBG_TEXT = [
   'WHITE',

@@ -11,6 +11,7 @@ const CheckField = forwardRef(({ onBlur, toucher, updater, onRightClick, clr, ad
   }));
   return (
     <ToggleButton
+      className="shadow-effect"
       color="info"
       value="check"
       selected={selected}

@@ -16,10 +16,8 @@ const CounterField = forwardRef(({ onBlur, toucher, updater, onRightClick, clrft
       onBlur={onBlur}
       ref={ref}
       sx={{
-        '&:hover': {
-          backgroundColor: (theme) =>
-            `${theme.palette.primary.main}40`,
-        },
+        pl: 1,
+        pr: 1,
         backgroundColor: COLORBG_TEXT[clrbg],
         borderRadius: 0,
         width: '100%',
@@ -33,7 +31,8 @@ const CounterField = forwardRef(({ onBlur, toucher, updater, onRightClick, clrft
         sx={{ mr: 1, color: COLORFT_TEXT[clrft] }}
         onClick={() => setCount((val) => { updater(`$${adr[0]}$${adr[1]}`, val + 1); return val + 1; })}
       />
-      <Typography variant="h6" sx={{ color: COLORFT_TEXT[clrft] }}>{count}</Typography>
+      <Typography
+        variant="h6" sx={{ color: COLORFT_TEXT[clrft] }}>{count}</Typography>
       <Replay
         sx={{ ml: 1, color: COLORFT_TEXT[clrft] }}
         onClick={() => setCount((val) => { updater(`$${adr[0]}$${adr[1]}`, 0); return 0 })}

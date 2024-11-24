@@ -6,11 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>404</title>
   <script>
-    const redirect = () => {
-      const path = window.location.pathname;
-      window.location.replace(`${window.location.origin}${window.location.pathname}`);
+    const redirectToApp = () => {
+      const currentPath = window.location.pathname;
+      const origin = window.location.origin;
+      if (!currentPath.startsWith('/make_anything')) {
+        window.location.replace(`${origin}/make_anything${currentPath}`);
+      } else {
+        window.location.replace(`${origin}/make_anything/`);
+      }
     };
-    window.onload = redirect;
+    window.onload = redirectToApp;
   </script>
 </head>
 

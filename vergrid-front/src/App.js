@@ -1,10 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Base from './layouts/Base';
-import Examples from './pages/Examples';
 import SheetPage from './pages/SheetPage';
-import TestPage from './pages/TestPage';
-import CheckField from './components/CheckField';
 
 function App() {
   useEffect(() => {

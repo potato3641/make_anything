@@ -13,14 +13,11 @@ function App() {
     }
   }, [])
   return (
-    <Router>
+    <Router basename="/make_anything">
       <Base>
         <Routes>
           <Route path="/" element={<Navigate to="/sheets" replace />} />
-          <Route path="/examples" element={<Examples />} />
           <Route path="/sheets" element={<SheetPage />} />
-          <Route path="/test" element={<TestPage />} />
-          <Route path="/check" element={<CheckField />} />
         </Routes>
       </Base>
     </Router >

@@ -1,22 +1,18 @@
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
-import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Tooltip from '@mui/material/Tooltip';
-import Skeleton from '@mui/material/Skeleton';
-import LinearProgress from '@mui/material/LinearProgress';
+import { Grid, Button, TextField, Tooltip, Skeleton, LinearProgress } from '@mui/material';
 import CellMenu from './CellMenu';
 import CellReserved from './CellReserved';
 import CheckField from './CheckField';
 import CounterField from './CounterField';
 import CheckListField from './CheckListField';
+import { CopyToClipboard } from "react-copy-to-clipboard";
 import { __REGEX, __REGEx, __REGEX_FUNCTION, COLORBG_TEXT, COLORFT_TEXT } from '../const.js'
 import './Sheets.css';
 
 const DEBUG_FLAG = true;
 const __DEBUG = (msg) => DEBUG_FLAG ? console.log(msg) : msg;
 
-const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSetting }, ref) => {
+const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSetting, snackController }, ref) => {
   const sizeOfSheet = size;
   const gridIndex = [];
   const maximumsize = 1000;
@@ -38,8 +34,11 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
   const [focusTarget, setFocusTarget] = useState(null); // TextField Fouce Target Key
   const [touchTarget, setTouchTarget] = useState(null); // TextField Touch Target Key
   const [focusTargetValue, setFocusTargetValue] = useState(undefined); // TextField Live Value
+  const [cellipboard, setCellipboard] = useState(null);
+  const [cutter, setCutter] = useState(false);
   const focusTargetRef = useRef({}); // Sheet Live Object
   const inputRef = useRef(''); // TextField Live Object
+  const copyRef = useRef(null); // Object for Copy
 
   useImperativeHandle(ref, () => ({
     getCellValues() {
@@ -135,13 +134,42 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
    * 3 : 지우기
    * 4 : 설정
    */
-  const emitIdx = (idx) => {
+  const emitIdx = (idx) => { // ALERT 작업중
     switch (idx) {
       case 0: // 잘라내기
+        if (copyRef.current) {
+          setCutter(true);
+          setCellipboard({
+            key: touchTarget,
+            value: calFormula(cellValues[touchTarget])
+          })
+          copyRef.current.click();
+        }
         break;
       case 1: // 복사하기
+        if (copyRef.current) {
+          setCutter(false);
+          setCellipboard({
+            key: touchTarget,
+            value: calFormula(cellValues[touchTarget])
+          })
+          copyRef.current.click();
+        }
         break;
       case 2: // 붙여넣기
+        if ([0, undefined].includes(cellSettings[touchTarget]?.perpose)) {
+          if (cellipboard) {
+            if (cutter) {
+              handlerTextRemove(cellipboard.key);
+              setCutter(false);
+            }
+            updateCellData(touchTarget, cellipboard.value);
+          } else {
+            snackController(true, "시트에서 복사된 값이 존재하지 않습니다")
+          }
+        } else {
+          snackController(true, "Text 셀에만 붙여넣기가 가능합니다")
+        }
         break;
       case 3: // 지우기
         handlerTextRemove();
@@ -163,7 +191,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
       perpose: cellSettings[touchTarget]?.perpose,
       colorbg: cellSettings[touchTarget]?.colorbg,
       colorft: cellSettings[touchTarget]?.colorft,
-      value: cellSettings[touchTarget]?.value,
+      message: cellSettings[touchTarget]?.message,
     });
     setOpenReserve(true);
   }
@@ -178,18 +206,18 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
   /**
    * 우클릭 메뉴 - 예약 선택값 가져오는 이벤트 핸들러
    */
-  const emitPeriodPerpose = (period, perpose, colorbg, colorft, value = 'check') => {
+  const emitPeriodPerpose = (period, perpose, colorbg, colorft, message = 'check') => {
     const today = new Date();
     const regex = __REGEx;
     const match = touchTarget.match(regex);
     const key = `$${match[1]}$${match[2]}`;
-    updateCellSetting(key, period, perpose, colorbg, colorft, value, today);
+    updateCellSetting(key, period, perpose, colorbg, colorft, message, today);
   }
 
   /**
    * 셀 세팅 업데이트
    */
-  const updateCellSetting = (key, period, perpose, colorbg, colorft, value = 'check', date) => {
+  const updateCellSetting = (key, period, perpose, colorbg, colorft, message = 'check', date) => {
     if (key)
       setCellSettings({
         ...cellSettings,
@@ -198,7 +226,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
           perpose: perpose,
           colorbg: colorbg,
           colorft: colorft,
-          value: value,
+          message: message,
           date: date,
         }
       });
@@ -208,11 +236,12 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
    * 셀 데이터(Value) 업데이트
    */
   const updateCellData = (key, value) => {
-    if (key)
-      setCellValues({
-        ...cellValues,
+    if (key && cellValues[key] !== value) {
+      setCellValues(prevCellValues => ({
+        ...prevCellValues,
         [key]: value,
-      });
+      }));
+    }
   };
 
   /**
@@ -333,20 +362,29 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
         if (event.key === '=')
           setRefMode(true);
       }
-      if (event.key === 'Delete') {
+      if (event.key === 'Delete')
         handlerTextRemove();
-      }
+      if (event.ctrlKey && event.key === 'c')
+        emitIdx(1);
+      if (event.ctrlKey && event.key === 'v')
+        emitIdx(2);
+      if (event.ctrlKey && event.key === 'x')
+        emitIdx(0);
     }
   };
 
   /** 
    * 터치 셀 데이터 삭제
    */
-  const handlerTextRemove = () => {
+  const handlerTextRemove = (key = undefined) => {
     const regex = __REGEx;
     const match = touchTarget.match(regex);
-    const key = `$${match[1]}$${match[2]}`;
-    updateCellData(key, '');
+    if (key === undefined)
+      key = `$${match[1]}$${match[2]}`;
+    const { [key]: _, ...newcellValues } = cellValues;
+    setCellValues({
+      ...newcellValues,
+    });
   }
 
   /**
@@ -755,6 +793,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
           type: "Check",
           component:
             <CheckField
+              defaultValue={cellValues[key]}
               onBlur={(event) => handlerUnfoucedTarget(i, j, event)}
               toucher={handlerClickCell}
               updater={updateCellData}
@@ -769,6 +808,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
           type: "Counter",
           component:
             <CounterField
+              defaultValue={cellValues[key]}
               onBlur={(event) => handlerUnfoucedTarget(i, j, event)}
               toucher={handlerClickCell}
               updater={updateCellData}
@@ -784,13 +824,14 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
           type: "CheckList",
           component:
             <CheckListField
+              defaultValue={cellValues[key]}
               onBlur={(event) => handlerUnfoucedTarget(i, j, event)}
               toucher={handlerClickCell}
               updater={updateCellData}
               onRightClick={(event) => handlerRightClick(event, i, j)}
               clrft={cellSettings[key]?.colorft}
               clrbg={cellSettings[key]?.colorbg}
-              val={cellSettings[key]?.value}
+              message={cellSettings[key]?.message}
               adr={[i, j]}
               ref={(e) => (focusTargetRef.current[`$${i}$${j}`] = e)}
             />
@@ -878,6 +919,11 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
       </Grid>
       <CellMenu open={openMenu} anchorEl={anchorEl} emit={emitIdx} handlerClose={handlerCloseMenu} />
       <CellReserved open={openReserve} emit={emitPeriodPerpose} handlerClose={handlerCloseReserve} initData={initSetting} />
+      {openMenu &&
+        <CopyToClipboard text={calFormula(cellValues[touchTarget])}>
+          <button ref={copyRef} style={{ display: 'none' }} />
+        </CopyToClipboard>
+      }
     </div>
   );
 });

@@ -1,14 +1,17 @@
-import React, { useState, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { ToggleButton } from '@mui/material';
 import { Check, Close } from '@mui/icons-material';
 import { COLORFT_TEXT } from '../const.js'
 import './CheckField.css';
 
-const CheckField = forwardRef(({ onBlur, toucher, updater, onRightClick, clr, adr }, ref) => {
-  const [selected, setSelected] = useState(false);
+const CheckField = forwardRef(({ defaultValue, onBlur, toucher, updater, onRightClick, clr, adr }, ref) => {
+  const [selected, setSelected] = useState(!(!defaultValue) || false);
   useImperativeHandle(ref, () => ({
     value: selected ? 1 : 0,
   }));
+  useEffect(() => {
+    setSelected(() => !(!defaultValue) || false)
+  }, [defaultValue])
   return (
     <ToggleButton
       className="shadow-effect"

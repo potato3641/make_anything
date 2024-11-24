@@ -3,21 +3,25 @@ import { FormControlLabel, Checkbox } from '@mui/material';
 import { COLORFT_TEXT, COLORBG_TEXT } from '../const.js'
 import './CheckListField.css';
 
-const CheckListField = forwardRef(({ onBlur, toucher, updater, onRightClick, clrft, clrbg, val, adr }, ref) => {
-  const [value, setValue] = useState(val || 'check');
-  const [checked, setChecked] = useState(false);
+const CheckListField = forwardRef(({ defaultValue, onBlur, toucher, updater, onRightClick, clrft, clrbg, content, adr }, ref) => {
+  const [message, setMessage] = useState(content || 'check');
+  const [checked, setChecked] = useState(!(!defaultValue) || false);
   useImperativeHandle(ref, () => ({
-    value: value,
+    message: message,
     checked: checked ? 1 : 0,
   }));
   useEffect(() => {
-    setValue(() => val || 'check');
-  }, [val]);
+    setMessage(() => content || 'check');
+  }, [content]);
+  useEffect(() => {
+    setChecked(() => !(!defaultValue) || false)
+  }, [defaultValue])
   return (
     <FormControlLabel
       className='shadow-effect'
       onContextMenu={onRightClick}
       onBlur={onBlur}
+      checked={checked}
       ref={ref}
       onChange={() => setChecked((val) => { toucher(null, adr[0], adr[1]); updater(`$${adr[0]}$${adr[1]}`, !val + 0); return !val })}
       sx={{
@@ -43,7 +47,7 @@ const CheckListField = forwardRef(({ onBlur, toucher, updater, onRightClick, clr
           }}
         />
       }
-      label={value}
+      label={message}
     />
   );
 });

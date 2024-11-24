@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/github.io/make_anything/static/css/main.e06c40d6.css",
+    "main.css": "/github.io/make_anything/static/css/main.e94ad093.css",
     "main.js": "/github.io/make_anything/static/js/main.ee903fd6.js",
     "static/js/453.90377168.chunk.js": "/github.io/make_anything/static/js/453.90377168.chunk.js",
     "index.html": "/github.io/make_anything/index.html",
-    "main.e06c40d6.css.map": "/github.io/make_anything/static/css/main.e06c40d6.css.map",
+    "main.e94ad093.css.map": "/github.io/make_anything/static/css/main.e94ad093.css.map",
     "main.ee903fd6.js.map": "/github.io/make_anything/static/js/main.ee903fd6.js.map",
     "453.90377168.chunk.js.map": "/github.io/make_anything/static/js/453.90377168.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.e06c40d6.css",
+    "static/css/main.e94ad093.css",
     "static/js/main.ee903fd6.js"
   ]
 }

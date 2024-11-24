@@ -8,8 +8,8 @@
   <script>
     const redirectToApp = () => {
       const path = window.location.pathname;
-      if (path !== '/') {
-        window.location.replace(window.location.origin + '/');
+      if (!window.location.pathname.startsWith('/make_anything')) {
+        window.location.replace(window.location.origin + "/make_anything" + path);
       }
     };
     window.onload = redirectToApp;

@@ -13,7 +13,7 @@ function App() {
     }
   }, [])
   return (
-    <Router>
+    <Router basename={process.env.PUBLIC_URL}>
       <Base>
         <Routes>
           <Route path="/" element={<Navigate to="/sheets" replace />} />

@@ -32,6 +32,7 @@ const SheetPage = () => {
   const toolbarRef = useRef(null);
   const [toolbarHeight, setToolbarHeight] = useState(0);
   const sheetRef = useRef();
+  const [snackMsg, setSnackMsg] = useState('Activate Sheet Saved')
 
   const loadDataFromLocalStorage = (num) => {
     const savedData = localStorage.getItem(`sheetData${num}`);
@@ -75,6 +76,7 @@ const SheetPage = () => {
     }
   }, []);
 
+  const handlerSnackbar = (onoff, msg = 'Activate Sheet Saved') => { setOpenSnack(onoff); setSnackMsg(msg); }
   const handleDialogClick = () => setOpenDialog(true);
   const handleSnackClose = () => setOpenSnack(false);
   const handleDialogClose = () => setOpenDialog(false);
@@ -88,7 +90,7 @@ const SheetPage = () => {
   }
   const handleSnackClick = () => {
     saveDataToLocalStorage(tabValue, sizeOfSheet, getSheetData(), getSheetSetting());
-    setOpenSnack(true);
+    handlerSnackbar(true);
   }
 
   const loadingStopper = () => {
@@ -214,7 +216,7 @@ const SheetPage = () => {
       </Dialog>
       <Snackbar
         open={openSnack}
-        message="Activate Sheet Saved"
+        message={snackMsg}
         autoHideDuration={2000}
         onClose={handleSnackClose}
       />
@@ -224,7 +226,9 @@ const SheetPage = () => {
         toolbarHeight={toolbarHeight}
         loader={loadingStopper}
         inheritData={inheritData}
-        inheritSetting={inheritSetting} />
+        inheritSetting={inheritSetting}
+        snackController={handlerSnackbar}
+      />
     </div>
   );
 };

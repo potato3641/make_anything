@@ -1,14 +1,17 @@
-import React, { useState, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Fab, Typography } from '@mui/material';
 import { Navigation, Replay } from '@mui/icons-material';
 import { COLORFT_TEXT, COLORBG_TEXT } from '../const.js'
 import './CounterField.css';
 
-const CounterField = forwardRef(({ onBlur, toucher, updater, onRightClick, clrft, clrbg, adr }, ref) => {
-  const [count, setCount] = useState(0);
+const CounterField = forwardRef(({ defaultValue, onBlur, toucher, updater, onRightClick, clrft, clrbg, adr }, ref) => {
+  const [count, setCount] = useState(defaultValue || 0);
   useImperativeHandle(ref, () => ({
     value: count,
   }));
+  useEffect(() => {
+    setCount(() => defaultValue || 0)
+  }, [defaultValue])
   return (
     <Fab
       onContextMenu={onRightClick}

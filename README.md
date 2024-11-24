@@ -278,4 +278,14 @@
 >>>>>>> 89f8e1d ([PAPER] dev noted)
  - 중간에 생긴 `display all 5311 possibilities?`는 뭔가?
 	 - 그냥 vscode에서 탭누르면 썼던거 보여줄지 물어보는것
+<<<<<<< HEAD
 >>>>>>> bdaa993 ([PAPER] dev noted)
+=======
+ - 배포하며 생긴문제...
+	 - 내 서버가 있지만 oracle서버가 무슨 문제인지 npm install에서 하루종일 멈춘다
+	 - 그래서 github pages를 잠시 이용하기로
+	 - 기억해라!
+	 - homepage 뒤에 /는 없어야한다
+	 - Router의 basename은 그냥 `process.env.PUBLIC_URL`
+	 - 나는 틀린게 없는데 뭔가 이상하다? 싶을땐 강력새로고침 `Ctrl+F5`해라................
+>>>>>>> b886868 ([PAPER] dev noted)

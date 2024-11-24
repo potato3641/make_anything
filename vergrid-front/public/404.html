@@ -1,12 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-  <meta http-equiv="refresh" content="0; url=./index.html" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404</title>
+  <script>
+    const redirectToApp = () => {
+      const currentPath = window.location.pathname;
+      const origin = window.location.origin;
+      if (!currentPath.startsWith('/make_anything')) {
+        window.location.replace(`${origin}/make_anything${currentPath}`);
+      } else {
+        window.location.replace(`${origin}/make_anything/`);
+      }
+    };
+    window.onload = redirectToApp;
+  </script>
 </head>
 
-<body>
-  <p>Page not found. Redirecting...</p>
-</body>
+<body></body>
 
 </html>

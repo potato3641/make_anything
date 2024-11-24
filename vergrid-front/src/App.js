@@ -1,10 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Base from './layouts/Base';
-import Examples from './pages/Examples';
 import SheetPage from './pages/SheetPage';
-import TestPage from './pages/TestPage';
-import CheckField from './components/CheckField';
 
 function App() {
   useEffect(() => {
@@ -13,13 +9,11 @@ function App() {
     }
   }, [])
   return (
-    <Router basename="/make_anything">
-      <Base>
-        <Routes>
-          <Route path="/" element={<Navigate to="/sheets" replace />} />
-          <Route path="/sheets" element={<SheetPage />} />
-        </Routes>
-      </Base>
+    <Router basename={process.env.PUBLIC_URL}>
+      <Routes>
+        <Route path="/" element={<Navigate to="/sheets" replace />} />
+        <Route path="/sheets" element={<SheetPage />} />
+      </Routes>
     </Router >
   );
 }

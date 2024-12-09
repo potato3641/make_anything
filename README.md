@@ -1,6 +1,4 @@
-<<<<<<< HEAD
 # test
-=======
 # 만들고싶은거 만드는 프로젝트
 
 - 진짜 만들고 싶은 것 만듬
@@ -51,38 +49,20 @@
 	 - 그래픽 시트도 있다면 좋을텐데 이건 배운다면
 	 - 협업용
  3. 1차 기능 우선순위 정리
-<<<<<<< HEAD
 	 - 셀 시트 구현
-<<<<<<< HEAD
 		 - 셀 시트 데이터 로컬스토리지 저장
 		 - 셀 시트 데이터 ref기반 연산식 확인
 		 - 셀 시트 기반 기본함수 구현
 		 - 셀 예약동작 구현(동작 아이디어 생각중...)
->>>>>>> 7fcc45c ([PAPER] readme and skeleton)
-=======
 	 - 셀 시트 데이터 로컬스토리지 저장
 	 - 셀 시트 데이터 ref기반 연산식 확인
-=======
 	 - ~~셀 시트 구현~~
 	 - ~~셀 시트 데이터 로컬스토리지 저장~~
 	 - ~~셀 시트 데이터 ref기반 연산식 확인~~
-<<<<<<< HEAD
->>>>>>> fb2fa14 ([PAPER] dev noted)
 	 - 셀 시트 기반 기본함수 구현
-=======
 	 - ~~셀 시트 기반 기본함수 구현~~
-<<<<<<< HEAD
->>>>>>> c083893 ([PAPER] dev noted)
 	 - 셀 예약동작 구현(동작 아이디어 생각중...)
-<<<<<<< HEAD
->>>>>>> 7115bb2 ([PAPER] fix typo)
-=======
-=======
 	 - ~~셀 예약동작 구현~~
-<<<<<<< HEAD
->>>>>>> a9f93aa ([PAPER] dev noted)
-
-=======
  4. 1차 결과 피드백
 	 - 셀 시간 어떻게 동작할지 결정내리기
 	 - 탭의 가로스크롤
@@ -95,16 +75,12 @@
 	 - TextField 56px의 제약 안되는건 알지만 제약 풀어보자 TextField해체해서라도
 	 - ?버튼 추가해서 가이드 만들기(현재 보면 모른다)
 	 - 슬슬 t2w 인터페이스 내리고 기능만 백서버로 개조해서 가이드를 t2w로 제작하는건 어떨지?
->>>>>>> 63e38fe ([PAPER] second function development noted)
 ### 개발 노트
 
 1. 1차 기능 개발 노트
  - react-data-grid ? 하루종일 cell select기능이 안돼서 유기
  - ag-grid ? 이야 이거 쓸만하다~ 하는 기능이 유료라 유기
  - react-data-grid ? 다시 시도해보겠음...
-<<<<<<< HEAD
->>>>>>> e64640e ([PAPER] today noted)
-=======
  - 이것도 e버전 유료라 유기
  - css 신경 안쓰려고 mui material 갖다쓰려고 만져보는중
  - 시트 구성은 어떻게?
@@ -112,18 +88,12 @@
 	 - 다행히 Textfield가 multiline과 fullwidth로 내가 원하는 구현이 가능
 	 - 시트 기능 우선순위 설정이 필요한데 뭘 할 수 있는지 모르니 일단 구현부터
  - 시트 입력 Button과 TextField의 스위칭은 했는데 이걸 display:none으로 구현해버려서 TextField에 값을 넣어도 다시 Button을 클릭하기 전까지 TextField의 값을 알 수 없는 현상이 있음. 이걸 구조를 바꿔서 해결해야함 두개의 z-index를 바꾼다던지 하는 식으로...
-<<<<<<< HEAD
->>>>>>> 906b586 ([PAPER] dev noted)
-=======
 	 - 스위칭이 아니라 버튼에 TextField의 값을 넣는 것으로
  - 시트에 함수를 넣는건 구현 우선순위 잠시 뒤로 미룸
  - 시트 계산이 사칙연산만 됨(괄호계산도 안됨)
  - 시트의 row와 column을 관리하는 탭이 필요할까?
-<<<<<<< HEAD
    - 일단 구현해보고 추후에 지우는것으로
 	 - 그러면 이게 Sheets 컴포넌트에 같이 있을 필요가 있나? 가뜩이나 코드가 길긴함
->>>>>>> 0ffe2c9 ([PAPER] dev noted)
-=======
 	 - 일단 구현해보고 추후에 지우는것으로
 	 - 그러면 이게 Sheets 컴포넌트에 같이 있을 필요가 있나? 가뜩이나 코드가 길긴함
  - 문제 발생. TextChange가 최신화와 데이터 동기화를 겸하는중이라 입력시 렌더링이 무진장 길다
@@ -131,14 +101,8 @@
 	 - refMode의 셀 편집 기능 사용 시 useRef로 잡은 타겟이 변경되는 문제가 발생...
 	 - focusTargetValue를 value가 아니라 defaultValue로 변경했음
 	 - TextField의 value는 관리를 focusTargetRef로 따로 관리함(데이터 저장은 cellValues, 객체 저장은 focusTargetRef가)
-<<<<<<< HEAD
->>>>>>> 1d7698c ([DEV] dev noted)
-=======
  - 문제 발생. TextChange를 바꿨더니 reference모드가 아닌데도 클릭 셀의 데이터를 가져온다
 	 - 완료. static/object/TextField 세 값을 모두 관리해야했는데 중간에 섞인 문제였음
-<<<<<<< HEAD
->>>>>>> 7e87735 ([PAPER] dev noted)
-=======
  - css 지금 이상한거 알지? 이거 해결하려면 탭 넣을지 빨리 결정해야함
 	 - 안넣는게 좋을거같은데 이게 완전 시트로 구현하는게 아니라서
 	 - 안넣을거면 Shift + 클릭으로 currentRegion구현해야함
@@ -154,11 +118,8 @@
 	 - 구현하다 tab change 이후 데이터가 없는 탭에서 시트 생성하면 이전 탭의 셀 데이터가 남아있는 오류 발생
 	 - if문에 걸려있는 null때문에 넘어가나 하고 false로 바꿔줌 -> 간략해지긴했는데 문제는 그대로
 	 - useEffect쓰면 렌더링될때마다 되겠다 하고 inheritData를 useEffect로 상시 초기화하도록함 -> 순환 오류 발생
-<<<<<<< HEAD
 	 - 찾아보니 useState는 "최초 렌더링" 할 때만 초기화하고 그 이후는 useEffect로 하기 때문에 `const initData = inheritData || {}; const [cellValues, setCellValues] = useState(initData)`대신 `const [cellValues, setCellValues] = useState(inheritData || {});`로 조정하고 useEffect 내에서 다시 setCellValues를 호출하는것으로 변경
 	 - SheetPage에서 데이터가 없을 때 tc는 inheritData를 null로, confirm때는 inheritData를 false로 하도록 하여 inheritData의 변경점을 설정함(어차피 inheritData가 null이면 무조건 사용자가 confirm을 해야 새 시트가 나오게 되어있음)
->>>>>>> 807772f ([PAPER] dev noted)
-=======
 	 - 찾아보니 useState는 "최초 렌더링" 할 때만 초기화하고 그 이후는 useEffect로 하기 때문에 useEffect 초기화 시점으로 로 조정하고 useEffect 내에서 다시 setCellValues를 호출하는것으로 변경
 	 - SheetPage에서 데이터가 없을 때 tc는 inheritData를 null로, confirm때는 inheritData를 false로 하도록 하여 inheritData의 변경점을 설정함(어차피 inheritData가 null이면 무조건 사용자가 confirm을 해야 새 시트가 나오게 되어있음)
 	 - TabValue의 useState 초기화시점에서 loadData 실행하도록 해서 해결함(loadData가 useEffect로 묶이면 loadData에서 또다른 useState값들을 건드리는바람에 useEffect를 사용시 오류가 발생해서 이렇게 하는것으로)
@@ -167,21 +128,12 @@
 	 - loading을 추가함 SheetPage에도 Sheets에도. 그런데 결국 저장되는 데이터는 Sheets에 있는 CellValues이기 때문에 SheetPage에 있는 loading은 제거함
 	 - 문제가 inheritData를 로딩하는중에 tabChange가 가능한것이기 때문에 로딩이 끝난 후(inheritData가 CellValues에 들어간 후) 로딩이 종료되도록 하고 로딩 중에 tabChange를 할 수 없도록 tab에 `disabled={loading}`을 설정함
  - tab 변경 간 사라지지 않던 이전 탭 CellValues를 제거함
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> fb2fa14 ([PAPER] dev noted)
-=======
  - 정규식 작성중. 다른 방법은 많지만 정규식으로 하고싶음. 고집인가? 그래도 도전~
->>>>>>> d923d5e ([PAPER] dev noted)
-=======
  - 정규식 작성중. 다른 방법은 많지만 정규식으로 하고싶음. 고집인가? 그래도 도전~
 	 - 완료. calFormula에서 함수 계산 부분을 따로 빼서 정규식 도배된부분을 calSheetFunction과 calCellFunction로 분리
 	 - calSheetFunction은 `함수`를 찾고 반영시킴
 	 - calCellFunction은 찾은 `함수`부분을 받아서 함수를 직접적으로 계산함
 	 - IF 조건부분 완성해야함
-<<<<<<< HEAD
->>>>>>> 18fafaa ([PAPER] dev noted)
-=======
  - IF 함수 계산중 발생한 문제 처리
 	 - pre_inside의 if 정규식부분이 `IF(A,B,C)`에서 `A, B, C`를 추출하는게 아니라 `(A, B, C`를 추출하고 있음.
 	 - 비이이잉비이이이이ㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣㅣ잉 돌아가서 화가났지만 결국 괄호의 escape처리를 한번 더 했음 `\\(`
@@ -204,18 +156,12 @@
 	 - borderline그리기도 넣으면 좋겠다
 	 - 뒤에 지금 default로 흰색인데 이거 바꿀수있게하면 좋겠다
 	 - sheet가 지금 외곽부분이 너무 딱딱한데 이거 좀 바꿔보자... radius나 shadow라도 줘보기로
-<<<<<<< HEAD
->>>>>>> c083893 ([PAPER] dev noted)
-=======
  - Shift 진행중...
 	 - 아무리 생각해도 전역 + sheet활성화 두가지를 캐치해야한다
 	 - redux를 써야할까?
 	 - Shift는 전역으로 걸어야 할 문제가 있어 일단 중단
 	 - 배열은 일단 :쓰고 클릭하는식으로...
  - 예약기능 하기전에 sheet 한번 건들자... 이거 밀리면 답없을거같아서
-<<<<<<< HEAD
->>>>>>> 2ff8b83 ([PAPER] dev noted)
-=======
  - 검토 필요한거 주석으로 ALERT 써놓을것 까먹지말기
  - sheet의 border처리 완료
  - 우클릭 기능 마인드맵
@@ -284,18 +230,9 @@
 	 - ~~서식~~ 합병됨
  - 중요한것
 	 - 아무리 레퍼런스 찾아와도 절대 mui 공식문서 확인할것
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> 5e1555d ([PAPER] dev noted)
-=======
-=======
 	 - 초기화 시점<< 언제로 할지 결정
->>>>>>> 89f8e1d ([PAPER] dev noted)
  - 중간에 생긴 `display all 5311 possibilities?`는 뭔가?
 	 - 그냥 vscode에서 탭누르면 썼던거 보여줄지 물어보는것
-<<<<<<< HEAD
->>>>>>> bdaa993 ([PAPER] dev noted)
-=======
  - 배포하며 생긴문제...
 	 - 내 서버가 있지만 oracle서버가 무슨 문제인지 npm install에서 하루종일 멈춘다
 	 - 그래서 github pages를 잠시 이용하기로
@@ -303,4 +240,3 @@
 	 - homepage 뒤에 /는 없어야한다
 	 - Router의 basename은 그냥 `process.env.PUBLIC_URL`
 	 - 나는 틀린게 없는데 뭔가 이상하다? 싶을땐 강력새로고침 `Ctrl+F5`해라................
->>>>>>> b886868 ([PAPER] dev noted)

@@ -657,6 +657,8 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
     let replacedTarget = target;
     let numericFlag = true; // 문자판별기
 
+    __DEBUG(`init : ${replacedTarget}`)
+
     // 단순 사칙연산 선행처리
     // 조건연산 이전 조건사칙연산 수행을 위한 4종 연산 처리
     // 근데 이거 연산 이후 (n)도 검토해야하지 않을까? ALERT
@@ -667,6 +669,9 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
         break;
       const left = parseFloat(match[1].match(__REGEx) ? calFormula(cellValues[match[1]], funcall + 1) : match[1]);
       const right = parseFloat(match[3].match(__REGEx) ? calFormula(cellValues[match[3]], funcall + 1) : match[3]);
+      __DEBUG(match)
+      __DEBUG(left)
+      __DEBUG(right)
       let result = 0;
       switch (match[2]) {
         case '+':
@@ -690,7 +695,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
       )
     }
 
-    // __DEBUG(`first : ${replacedTarget}`)
+    __DEBUG(`first : ${replacedTarget}`)
     // 비교연산 조건처리
     const regexCompare = __REGEX_FUNCTION.COMPARE_FIND;
     if (regexCompare.test(replacedTarget)) {
@@ -854,76 +859,79 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
                 },
               }}
               sx={{
+                minWidth: '56px',
                 '& .MuiInputBase-input': {
                   color: COLORFT_TEXT[cellSettings[key]?.colorft] || 'inherit',
                 },
                 backgroundColor: COLORBG_TEXT[cellSettings[key]?.colorbg] || 'transparent',
                 color: COLORFT_TEXT[cellSettings[key]?.colorft] || 'inherit',
               }}
-              variant="outlined" multiline fullWidth autoFocus
+              variant="outlined" multiline autoFocus
             />
         };
     }
   }
 
   return (
-    <div className='sheet-body' onKeyDown={(event) => handlerKeyDown(event, false)} style={{ height: `calc(100vh - ${toolbarHeight}px)`, overflow: 'auto' }}>
-      <Grid className='grid-container' container spacing={0}>
-        {!loading ? (
-          gridIndex.map(({ i, j }) => (
-            <Grid
-              className={'grid-item' + (touchTarget === `$${i}$${j}` ? ' cell-focused' : '')}
-              item
-              xs={12 / sizeOfSheet} key={`$${i}$${j}`}
-              sx={{
-                backgroundColor: COLORBG_TEXT[cellSettings[`$${i}$${j}`]?.colorbg] || 'transparent',
-                color: COLORFT_TEXT[cellSettings[`$${i}$${j}`]?.colorft] || 'inherit'
-              }}
-            >
-              {(() => {
-                const rendering = preRenderContent(i, j);
-                switch (rendering.type) {
-                  case "Check":
-                    return rendering.component;
-                  case "Counter":
-                    return rendering.component;
-                  case "CheckList":
-                    return rendering.component;
-                  case "Text":
-                    return focusTarget === `$${i}$${j}` ? rendering.component :
-                      <Tooltip title={`${i}-${j}`} placement="bottom-end">
-                        <Button
-                          onDoubleClick={() => handlerDoubleClickCell(i, j)}
-                          onClick={(event) => handlerClickCell(event, i, j)}
-                          onContextMenu={(event) => handlerRightClick(event, i, j)}
-                          className='cell-cover'
-                          color='inherit'
-                          variant="text"
-                        >
-                          {calFormula(cellValues[`$${i}$${j}`]) ?? ''}
-                        </Button>
-                      </Tooltip>
-                  default:
-                    return null;
-                }
-              })()}
-            </Grid>
-          ))
-        ) : (
-          <div>
-            <Skeleton variant='rectangular' animation="wave" width="100%" height="100vh" />
-            <LinearProgress />
-          </div>
-        )
+    <div className='sheet-pack'>
+      <div className='sheet-body' onKeyDown={(event) => handlerKeyDown(event, false)} style={{ height: `calc(100vh - ${toolbarHeight}px)`, overflow: 'auto' }}>
+        <Grid className='grid-container' container spacing={0}>
+          {!loading ? (
+            gridIndex.map(({ i, j }) => (
+              <Grid
+                className={'grid-item' + (touchTarget === `$${i}$${j}` ? ' cell-focused' : '')}
+                item
+                xs={12 / sizeOfSheet} key={`$${i}$${j}`}
+                sx={{
+                  backgroundColor: COLORBG_TEXT[cellSettings[`$${i}$${j}`]?.colorbg] || 'transparent',
+                  color: COLORFT_TEXT[cellSettings[`$${i}$${j}`]?.colorft] || 'inherit'
+                }}
+              >
+                {(() => {
+                  const rendering = preRenderContent(i, j);
+                  switch (rendering.type) {
+                    case "Check":
+                      return rendering.component;
+                    case "Counter":
+                      return rendering.component;
+                    case "CheckList":
+                      return rendering.component;
+                    case "Text":
+                      return focusTarget === `$${i}$${j}` ? rendering.component :
+                        <Tooltip title={`${i}-${j}`} placement="bottom-end">
+                          <Button
+                            onDoubleClick={() => handlerDoubleClickCell(i, j)}
+                            onClick={(event) => handlerClickCell(event, i, j)}
+                            onContextMenu={(event) => handlerRightClick(event, i, j)}
+                            className='cell-cover'
+                            color='inherit'
+                            variant="text"
+                          >
+                            {calFormula(cellValues[`$${i}$${j}`]) ?? ''}
+                          </Button>
+                        </Tooltip>
+                    default:
+                      return null;
+                  }
+                })()}
+              </Grid>
+            ))
+          ) : (
+            <div>
+              <Skeleton variant='rectangular' animation="wave" width="100%" height="100vh" />
+              <LinearProgress />
+            </div>
+          )
+          }
+        </Grid>
+        <CellMenu open={openMenu} anchorEl={anchorEl} emit={emitIdx} handlerClose={handlerCloseMenu} />
+        <CellReserved open={openReserve} emit={emitPeriodPerpose} handlerClose={handlerCloseReserve} initData={initSetting} />
+        {openMenu &&
+          <CopyToClipboard text={calFormula(cellValues[touchTarget])}>
+            <button ref={copyRef} style={{ display: 'none' }} />
+          </CopyToClipboard>
         }
-      </Grid>
-      <CellMenu open={openMenu} anchorEl={anchorEl} emit={emitIdx} handlerClose={handlerCloseMenu} />
-      <CellReserved open={openReserve} emit={emitPeriodPerpose} handlerClose={handlerCloseReserve} initData={initSetting} />
-      {openMenu &&
-        <CopyToClipboard text={calFormula(cellValues[touchTarget])}>
-          <button ref={copyRef} style={{ display: 'none' }} />
-        </CopyToClipboard>
-      }
+      </div>
     </div>
   );
 });

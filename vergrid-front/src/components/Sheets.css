@@ -1,5 +1,14 @@
+.sheet-pack {
+  position: relative;
+  display: inline-block;
+  background-color: transparent;
+  border: 20px solid #eaeaea;
+}
+
 .sheet-body {
+  display: flex;
   height: 100vh;
+  overflow-x: auto;
   overflow-y: auto;
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -7,17 +16,10 @@
   border: 1px solid #ccc;
   box-sizing: border-box;
   border-radius: 5px;
-  margin: 20px;
 }
 
 .sheet-body::-webkit-scrollbar {
   display: none;
-}
-
-.grid-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .grid-item {

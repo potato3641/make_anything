@@ -153,8 +153,8 @@ const SheetPage = () => {
     <div className='sheet-page'>
       <AppBar position="static">
         <Toolbar ref={toolbarRef} role="navigation">
-          <Fab sx={{ margin: '10px' }} onClick={handleDialogClick} color="primary" aria-label="add"><AddIcon /></Fab>
-          <Fab sx={{ margin: '10px' }} onClick={handleSnackClick} color="primary" aria-label="save"><SaveIcon /></Fab>
+          <Fab sx={{ margin: '10px', minWidth: '56px', }} onClick={handleDialogClick} color="primary" aria-label="add"><AddIcon /></Fab>
+          <Fab sx={{ margin: '10px', minWidth: '56px', }} onClick={handleSnackClick} color="primary" aria-label="save"><SaveIcon /></Fab>
           <Tabs
             value={tabValue}
             onChange={handleTabChange}

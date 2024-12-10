@@ -1,13 +1,6 @@
-.sheet-pack {
-  position: relative;
-  display: inline-block;
-  background-color: transparent;
-  border: 20px solid #eaeaea;
-}
-
 .sheet-body {
-  display: flex;
   height: 100vh;
+  width: 100%;
   overflow-x: auto;
   overflow-y: auto;
   -ms-overflow-style: none;
@@ -16,6 +9,7 @@
   border: 1px solid #ccc;
   box-sizing: border-box;
   border-radius: 5px;
+  margin: 20px;
 }
 
 .sheet-body::-webkit-scrollbar {
@@ -25,9 +19,11 @@
 .grid-item {
   border: 1px solid gray;
   height: 56px;
+  min-width: 100px;
 }
 
 .cell-cover {
+  min-width: 100px;
   width: 100%;
   height: 56px;
   overflow: hidden;

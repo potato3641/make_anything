@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { Grid, Button, TextField, Tooltip, Skeleton, LinearProgress } from '@mui/material';
+import { Grid, Button, TextField, Tooltip, Skeleton, LinearProgress, Box } from '@mui/material';
 import CellMenu from './CellMenu';
 import CellReserved from './CellReserved';
 import CheckField from './CheckField';
 import CounterField from './CounterField';
 import CheckListField from './CheckListField';
+import SheetBorder from './SheetBorder';
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { __REGEX, __REGEx, __REGEX_FUNCTION, COLORBG_TEXT, COLORFT_TEXT } from '../const.js'
 import './Sheets.css';
@@ -17,9 +18,11 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
   const gridIndex = [];
   const maximumsize = 1000;
   for (let i = 0; i < sizeOfSheet; i++) {
+    const row = [];
     for (let j = 0; j < sizeOfSheet; j++) {
-      gridIndex.push({ i, j });
+      row.push({ i, j });
     }
+    gridIndex.push(row)
   }
   // out of sheet
   const [anchorEl, setAnchorEl] = useState(null); // Target of cell function
@@ -39,6 +42,9 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
   const focusTargetRef = useRef({}); // Sheet Live Object
   const inputRef = useRef(''); // TextField Live Object
   const copyRef = useRef(null); // Object for Copy
+  const pivotRef = useRef(null); // pivot for width
+  const [offsetX, setOffsetX] = useState(0);
+  const [offsetXLevel, setOffsetXLevel] = useState(0);
 
   useImperativeHandle(ref, () => ({
     getCellValues() {
@@ -59,14 +65,31 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
     setLoading(true);
     setCellValues(() => inheritData || {});
     setCellSettings(() => inheritSetting || {});
+    setOffsetX(() => 0);
+    setOffsetXLevel(() => 0);
   }, [inheritData, inheritSetting]);
 
   useEffect(() => {
     if (cellValues && cellSettings) {
       loader();
       setLoading(false);
+      setOffsetX(() => 0);
+      setOffsetXLevel(() => 0);
     }
   }, [cellValues, cellSettings, loader]);
+
+  /**
+   * 시트 수평스크롤
+   */
+  const handlerHorizontalScroll = (swc) => {
+    const size = pivotRef.current.getBoundingClientRect()?.width;
+    const flag = swc ? 1 : -1;
+    // 좌측 || 우측 제한조건 , 40은 양쪽 margin
+    if ((offsetXLevel + flag > 0) || window.innerWidth - 40 > size * sizeOfSheet - offsetX * flag)
+      return;
+    setOffsetX(() => size * (offsetXLevel + flag));
+    setOffsetXLevel((prev) => prev + flag);
+  };
 
   /**
    * 셀 더블클릭 이벤트 핸들러
@@ -859,7 +882,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
                 },
               }}
               sx={{
-                minWidth: '56px',
+                minWidth: '64px',
                 '& .MuiInputBase-input': {
                   color: COLORFT_TEXT[cellSettings[key]?.colorft] || 'inherit',
                 },
@@ -873,65 +896,94 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
   }
 
   return (
-    <div className='sheet-pack'>
-      <div className='sheet-body' onKeyDown={(event) => handlerKeyDown(event, false)} style={{ height: `calc(100vh - ${toolbarHeight}px)`, overflow: 'auto' }}>
-        <Grid className='grid-container' container spacing={0}>
-          {!loading ? (
-            gridIndex.map(({ i, j }) => (
-              <Grid
-                className={'grid-item' + (touchTarget === `$${i}$${j}` ? ' cell-focused' : '')}
-                item
-                xs={12 / sizeOfSheet} key={`$${i}$${j}`}
-                sx={{
-                  backgroundColor: COLORBG_TEXT[cellSettings[`$${i}$${j}`]?.colorbg] || 'transparent',
-                  color: COLORFT_TEXT[cellSettings[`$${i}$${j}`]?.colorft] || 'inherit'
-                }}
-              >
-                {(() => {
-                  const rendering = preRenderContent(i, j);
-                  switch (rendering.type) {
-                    case "Check":
-                      return rendering.component;
-                    case "Counter":
-                      return rendering.component;
-                    case "CheckList":
-                      return rendering.component;
-                    case "Text":
-                      return focusTarget === `$${i}$${j}` ? rendering.component :
-                        <Tooltip title={`${i}-${j}`} placement="bottom-end">
-                          <Button
-                            onDoubleClick={() => handlerDoubleClickCell(i, j)}
-                            onClick={(event) => handlerClickCell(event, i, j)}
-                            onContextMenu={(event) => handlerRightClick(event, i, j)}
-                            className='cell-cover'
-                            color='inherit'
-                            variant="text"
-                          >
-                            {calFormula(cellValues[`$${i}$${j}`]) ?? ''}
-                          </Button>
-                        </Tooltip>
-                    default:
-                      return null;
-                  }
-                })()}
-              </Grid>
-            ))
-          ) : (
-            <div>
-              <Skeleton variant='rectangular' animation="wave" width="100%" height="100vh" />
-              <LinearProgress />
-            </div>
-          )
-          }
+    <div className='sheet'>
+      <SheetBorder onLeftClick={() => handlerHorizontalScroll(true)} onRightClick={() => handlerHorizontalScroll(false)} toolbarHeight={toolbarHeight} />
+      <Box
+        className='sheet-body'
+        onKeyDown={(event) => handlerKeyDown(event, false)}
+      >
+        <Grid
+          container
+          sx={{
+            height: `calc(100vh - ${toolbarHeight}px)`,
+            transform: `translateX(${offsetX}px)`,
+            transition: "transform 0.1s ease",
+          }}
+        >
+          {gridIndex.map((row, rowIdx) => (
+            <Grid
+              container
+              item
+              xs={12}
+              key={rowIdx}
+              spacing={0}
+              sx={{
+                display: 'flex',
+                flexWrap: 'nowrap',
+              }}
+            >
+              {!loading ? (
+                row.map(({ i, j }, idx) => (
+                  <Grid
+                    className={'grid-item' + (touchTarget === `$${i}$${j}` ? ' cell-focused' : '')}
+                    item
+                    ref={idx === 1 ? pivotRef : null}
+                    key={`$${i}$${j}`}
+                    sx={{
+                      width: '100px',
+                      backgroundColor: COLORBG_TEXT[cellSettings[`$${i}$${j}`]?.colorbg] || 'transparent',
+                      color: COLORFT_TEXT[cellSettings[`$${i}$${j}`]?.colorft] || 'inherit'
+                    }}
+                  >
+                    <Box>
+                      {(() => {
+                        const rendering = preRenderContent(i, j);
+                        switch (rendering.type) {
+                          case "Check":
+                            return rendering.component;
+                          case "Counter":
+                            return rendering.component;
+                          case "CheckList":
+                            return rendering.component;
+                          case "Text":
+                            return focusTarget === `$${i}$${j}` ? rendering.component :
+                              <Tooltip title={`${i}-${j}`} placement="bottom-end">
+                                <Button
+                                  onDoubleClick={() => handlerDoubleClickCell(i, j)}
+                                  onClick={(event) => handlerClickCell(event, i, j)}
+                                  onContextMenu={(event) => handlerRightClick(event, i, j)}
+                                  className='cell-cover'
+                                  color='inherit'
+                                  variant="text"
+                                >
+                                  {calFormula(cellValues[`$${i}$${j}`]) ?? ''}
+                                </Button>
+                              </Tooltip>
+                          default:
+                            return null;
+                        }
+                      })()}
+                    </Box>
+                  </Grid>
+                ))
+              ) : (
+                <div>
+                  <Skeleton variant='rectangular' animation="wave" width="100%" height="100vh" />
+                  <LinearProgress />
+                </div>
+              )
+              }
+            </Grid>
+          ))}
         </Grid>
-        <CellMenu open={openMenu} anchorEl={anchorEl} emit={emitIdx} handlerClose={handlerCloseMenu} />
-        <CellReserved open={openReserve} emit={emitPeriodPerpose} handlerClose={handlerCloseReserve} initData={initSetting} />
-        {openMenu &&
-          <CopyToClipboard text={calFormula(cellValues[touchTarget])}>
-            <button ref={copyRef} style={{ display: 'none' }} />
-          </CopyToClipboard>
-        }
-      </div>
+      </Box>
+      <CellMenu open={openMenu} anchorEl={anchorEl} emit={emitIdx} handlerClose={handlerCloseMenu} />
+      <CellReserved open={openReserve} emit={emitPeriodPerpose} handlerClose={handlerCloseReserve} initData={initSetting} />
+      {openMenu &&
+        <CopyToClipboard text={calFormula(cellValues[touchTarget])}>
+          <button ref={copyRef} style={{ display: 'none' }} />
+        </CopyToClipboard>
+      }
     </div>
   );
 });

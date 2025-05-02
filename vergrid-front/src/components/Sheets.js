@@ -524,6 +524,9 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
     const __COUNTA_INIT = (val) => 1;
     const __COUNTA_CAL = (val, next) => val++;
     const __COUNTA_RST = (val) => val;
+    const __ROUND_INIT = (val) => val;
+    const __ROUND_CAL = (val, next) => val;
+    const __ROUND_RST = (val, digit) => Math.round(val * (10 ** digit)) / (10 ** digit);
 
     let explorer = null;
 
@@ -567,6 +570,10 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
     if (explorer) // SUM
       explorer.forEach((target) => replacedTarget = calCellFunction(target, replacedTarget, 'SUM', __SUM_INIT, __SUM_CAL, __SUM_RST, funcall));
 
+    explorer = targetFunction.match(__REGEX_FUNCTION.ROUND);
+    if (explorer) // ROUND
+      explorer.forEach((target) => replacedTarget = calCellFunction(target, replacedTarget, 'ROUND', __ROUND_INIT, __ROUND_CAL, __ROUND_RST, funcall));
+
     return replacedTarget;
   }
 
@@ -576,8 +583,10 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
   const calCellFunction = (target, replacedTarget, name, init, cal, rst, funcall) => {
     const arrayChecker = /ARR/;
     const ifChecker = /IF/;
+    const roundChecker = /ROUND/;
     const arr_flag = !(!arrayChecker.test(name));
     const if_flag = ifChecker.test(name);
+    const round_flag = roundChecker.test(name);
     // 왜 linter disable 했냐면 함수식에 (, )가 들어가는걸 이해 못해서 자꾸 오류발생시킴
     /* eslint-disable */
     const getNameForArr = /^.+_(.+)$/;
@@ -589,6 +598,8 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
         return target.match(new RegExp(`${name}\\(([^:]+):([^)]+)\\)`));
       if (if_flag)
         return target.match(new RegExp(`${name}\\(([^,]+),([^,]+),([^)]+)\\)`));
+      if (round_flag)
+        return target.match(new RegExp(`${name}\\(([^,]+),([^)]+)\\)`));
       return target.match(new RegExp(`${name}\\((.*)\\)$`));
     }
     /* eslint-enable */
@@ -598,20 +609,30 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
         return [...arrayReference(inside[1], inside[2])];
       if (if_flag)
         return [calFormula(inside[1], funcall + 1), calFormula(inside[2], funcall + 1), calFormula(inside[3], funcall + 1)]
+      if (round_flag)
+        return [calFormula(inside[1], funcall + 1), calFormula(inside[2], funcall + 1)]
       return inside[1].match(/(\w+\([^()]*\)|\$\d+\$\d+|\w+)/g);
     }
     const parts = pre_parts();
     // __DEBUG(target);
     // __DEBUG(inside);
     // __DEBUG(parts);
-
     let value = parseFloat(init(parts[0].match(__REGEX) ? calFormula(cellValues[parts[0]], funcall + 1) : parts[0]));
-    if (!if_flag)
+    if (if_flag)
+      replacedTarget = replacedTarget.replace(
+        escapeRegExp(target),
+        rst(value, parts[1], parts[2]));
+    else if (round_flag)
+      replacedTarget = replacedTarget.replace(
+        escapeRegExp(target),
+        rst(value, parts[1]));
+    else {
       for (const part of parts)
         value = parseFloat(cal(value, part.match(__REGEX) ? calFormula(cellValues[part], funcall + 1) : calFormula(part)));
-    replacedTarget = replacedTarget.replace(
-      escapeRegExp(target),
-      if_flag ? rst(value, parts[1], parts[2]) : rst(value));
+      replacedTarget = replacedTarget.replace(
+        escapeRegExp(target),
+        rst(value));
+    }
     return replacedTarget
   }
 
@@ -680,7 +701,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
     let replacedTarget = target;
     let numericFlag = true; // 문자판별기
 
-    __DEBUG(`init : ${replacedTarget}`)
+    // __DEBUG(`init : ${replacedTarget}`)
 
     // 단순 사칙연산 선행처리
     // 조건연산 이전 조건사칙연산 수행을 위한 4종 연산 처리
@@ -692,9 +713,9 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
         break;
       const left = parseFloat(match[1].match(__REGEx) ? calFormula(cellValues[match[1]], funcall + 1) : match[1]);
       const right = parseFloat(match[3].match(__REGEx) ? calFormula(cellValues[match[3]], funcall + 1) : match[3]);
-      __DEBUG(match)
-      __DEBUG(left)
-      __DEBUG(right)
+      // __DEBUG(match)
+      // __DEBUG(left)
+      // __DEBUG(right)
       let result = 0;
       switch (match[2]) {
         case '+':
@@ -718,7 +739,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
       )
     }
 
-    __DEBUG(`first : ${replacedTarget}`)
+    // __DEBUG(`first : ${replacedTarget}`)
     // 비교연산 조건처리
     const regexCompare = __REGEX_FUNCTION.COMPARE_FIND;
     if (regexCompare.test(replacedTarget)) {
@@ -734,7 +755,7 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
 
     // __DEBUG(`after compare : ${replacedTarget}`);
     // 함수레퍼런스 계산
-    const regexFunction = /\b(AND|OR|NOT|IF|SUM|COUNTA)\b/;
+    const regexFunction = /\b(AND|OR|NOT|IF|SUM|COUNTA|ROUND)\b/;
     if (regexFunction.test(replacedTarget))
       replacedTarget = calSheetFunction(replacedTarget, replacedTarget, funcall);
     // if (regexFunction.test(replacedTarget))
@@ -905,6 +926,8 @@ const Sheets = forwardRef(({ size, toolbarHeight, loader, inheritData, inheritSe
         <Grid
           container
           sx={{
+            display: 'flex',
+            alignContent: 'flex-start',
             height: `calc(100vh - ${toolbarHeight}px)`,
             transform: `translateX(${offsetX}px)`,
             transition: "transform 0.1s ease",
